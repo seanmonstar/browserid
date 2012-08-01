@@ -1,16 +1,29 @@
-<article class="blurb">
-    <div class="graphic">
-        <img src="<%- cachify('/pages/i/one-password-graphic.png') %>" alt="<%- gettext('One password to rule them all.') %>">
-    </div>
+<div id="tour">
+  <article>
+      <div class="graphic">
+          <img src="<%- cachify('/pages/i/one-password-graphic.png') %>" alt="<%- gettext('One password to rule them all.') %>">
+      </div>
 
-    <div class="info">
-        <h1><%- gettext('Persona replaces multiple passwords') %></h1>
-        <p><%- format(gettext('Sites such as <a %(timesLink)>The Times Crossword</a>, <a %(openphotoLink)>OpenPhoto</a> and <a %(voostLink)>Voost</a> use Persona instead of usernames to sign you in.'),
-                      {
-                        timesLink: 'href="http://crossword.thetimes.co.uk/" target="_blank"',
-                        openphotoLink: 'href="http://current.openphoto.me/" target="_blank"',
-                        voostLink: 'href="https://www.voo.st/" target="_blank"'
-                      })
-               %></p><p><%- gettext('This means you only need one password to sign in to many sites.') %></p>
-    </div>
-</article>
+      <div class="info">
+          <h1><%- gettext('Persona replaces multiple passwords') %></h1>
+          <p><%- format(gettext('Sites such as <a %(timesLink)>The Times Crossword</a>, <a %(openphotoLink)>OpenPhoto</a> and <a %(voostLink)>Voost</a> use Persona instead of usernames to sign you in.'),
+                        {
+                          timesLink: 'href="http://crossword.thetimes.co.uk/" target="_blank"',
+                          openphotoLink: 'href="http://current.openphoto.me/" target="_blank"',
+                          voostLink: 'href="https://www.voo.st/" target="_blank"'
+                        })
+                 %></p><p><%- gettext('This means you only need one password to sign in to many sites.') %></p>
+      </div>
+  </article>
+
+  <article class="blurb flexible">
+      <div class="graphic">
+          <img src="<%- cachify('/pages/i/flexible-graphic.png') %>" alt="<%- gettext('Use multiple email addresses') %>">
+      </div>
+
+      <div class="info">
+          <h1><%- gettext('Persona is flexible') %></h1>
+          <p><%- gettext('Within Persona, your identity is your email address. You can use as many email addresses as you want, but you still only need one password.') %></p>
+      </div>
+  </article>
+</div>

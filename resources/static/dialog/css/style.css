@@ -508,3 +508,58 @@ a.emphasize:active {
   text-align: center;
 }
 
+/* Persona tour
+ */
+
+body.tour #content{
+  bottom: 0;
+  overflow: scroll;
+}
+
+body.tour footer{
+  display: none;
+}
+
+#tour{
+  padding: 30px 15px;
+}
+
+#tour article{
+  border-bottom: 1px solid #bec3c5;
+  margin-bottom: 30px;
+  overflow: hidden;
+  padding-bottom: 30px;
+}
+
+#tour img{
+  max-width: 100%;
+  vertical-align: bottom;
+}
+
+#tour h1{
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+#tour p{
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+#tour p:last-child{
+  margin-bottom: 0;
+}
+
+#tour .graphic{
+  float: left; /* 255 / 670 */
+  text-align: center;
+  width: 38.0597015%;
+}
+
+#tour .info{
+  float: left;
+  padding: 5px 45px 0;
+  width: 61.9402985%; /* 415 / 670 */
+}
