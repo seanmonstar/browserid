@@ -3,7 +3,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 body {
-  color: #383838;
   background-color: #dee3e6;
   background-image: url('/common/i/grain.png');
   background-image: url("/common/i/grain.png"), -webkit-gradient(linear, left top, left bottom, from(rgba(113, 126, 137, 0)), to(rgba(113, 126, 137, 0.2)));
@@ -12,40 +11,41 @@ body {
   background-image: url('/common/i/grain.png'),     -ms-linear-gradient(top, rgba(113, 126, 137, 0), rgba(113, 126, 137, 0.2));
   background-image: url('/common/i/grain.png'),      -o-linear-gradient(top, rgba(113, 126, 137, 0), rgba(113, 126, 137, 0.2));
   background-image: url('/common/i/grain.png'),         linear-gradient(top, rgba(113, 126, 137, 0), rgba(113, 126, 137, 0.2));
+  color: #383838;
   line-height: 18px;
 }
 
 #signIn {
-    position: absolute;
-    left: 0;
-    top: 0;
     bottom: 0;
-    width: 393px;
+    left: 0;
     padding-right: 105px;
+    position: absolute;
+    top: 0;
+    width: 393px;
 }
 
 .completing #signIn {
+            transition: all 750ms ease;
+       -moz-transition: all 750ms ease;
+        -ms-transition: all 750ms ease;
+         -o-transition: all 750ms ease;
     /**
      * The width is set in helpers.js->animateClose
      */
     -webkit-transition: all 750ms ease;
-       -moz-transition: all 750ms ease;
-        -ms-transition: all 750ms ease;
-         -o-transition: all 750ms ease;
-            transition: all 750ms ease;
 }
 
 
 
 header, footer {
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.05) inset;
     position: absolute;
     z-index: 2;
-    box-shadow: 0 0 24px rgba(0, 0, 0, 0.05) inset;
 }
 
 header {
-    top: 0;
     padding: 10px 20px;
+    top: 0;
     /* The *padding is a fix for IE6 and IE7 showing scroll bars in the
      * unsupported dialog.  Since IE6 and IE7 do not support box-sizing:
      * border-box, the left and right padding cause these versions of IE to
@@ -76,18 +76,18 @@ h3 {
 
 
 .home {
-  width: 161px;
-  height: 40px;
   background: url("/dialog/i/persona-logo-transparent.png") 0 0 no-repeat;
-  text-indent: -9999px;
   display: inline-block;
+  height: 40px;
+  text-indent: -9999px;
+  width: 161px;
   *display: block;
   zoom: 1;
 }
 
 footer {
-    bottom: 0;
     border-top: 1px solid #c7c6c1;
+    bottom: 0;
     /* The *padding is a fix for IE6 and IE7 showing scroll bars in the
      * unsupported dialog.  Since IE6 and IE7 do not support box-sizing:
      * border-box, the left and right padding cause these versions of IE to
@@ -112,19 +112,19 @@ label.selectable {
 }
 
 section {
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
     bottom: 0;
+    display: block;
+    left: 0;
+    position: absolute;
     right: 0;
+    top: 0;
     z-index: 0;
 }
 
 .table {
     display: table;
-    width: 100%;
     height: 100%;
+    width: 100%;
 }
 
 .table .vertical {
@@ -134,20 +134,20 @@ section {
 
 section > .contents {
     display: table-cell;
-    vertical-align: middle;
     height: 250px;
+    vertical-align: middle;
 }
 
 .form_section {
+    bottom: 15px;
+    font-size: 13px;
+    left: 15px;
+    position: absolute;
+    top: 15px;
     /**
      * Set the width of the container for when the arrow animation happens
      * otherwise the buttons slide right with the arrow
      */
-    font-size: 13px;
-    position: absolute;
-    top: 15px;
-    bottom: 15px;
-    left: 15px;
     width: 250px;
     overflow-y: auto;
 }
@@ -178,12 +178,12 @@ section > .contents {
 }
 
 #content {
-    position: absolute;
-    overflow: hidden;
+    bottom: 61px;
     left: 0;
+    overflow: hidden;
+    position: absolute;
     right: 0;
     top: 61px;
-    bottom: 61px;
     /* Fix for IE6 not displaying the unsupported dialog correctly. IE6 by
      * default sets the height and width of the element to 0 meaning nothing
      * shows up on the screen.
@@ -195,51 +195,51 @@ section > .contents {
 }
 
 #wait, #error, #delay {
-    z-index: -1;
     -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
     opacity: 0;
-
-    -webkit-transition-property: all;
-    -moz-transition-property: all;
-    -ms-transition-property: all;
-    -o-transition-property: all;
-    transition-property: all;
-
-    -webkit-transition-duration: 0.25s;
-    -moz-transition-duration: 0.25s;
-    -ms-transition-duration: 0.25s;
-    -o-transition-duration: 0.25s;
-    transition-duration: 0.25s;
+    transition-delay: 0.5s;
+    -moz-transition-delay: 0.5s;
+    -ms-transition-delay: 0.5s;
+    -o-transition-delay: 0.5s;
 
     /* Set this to .25s for Android browser, 0.5 seconds makes it so that it
      * does not show */
     -webkit-transition-delay: 0.25s;
-    -moz-transition-delay: 0.5s;
-    -ms-transition-delay: 0.5s;
-    -o-transition-delay: 0.5s;
-    transition-delay: 0.5s;
+    transition-duration: 0.25s;
+    -moz-transition-duration: 0.25s;
+    -ms-transition-duration: 0.25s;
+    -o-transition-duration: 0.25s;
+
+    -webkit-transition-duration: 0.25s;
+    transition-property: all;
+    -moz-transition-property: all;
+    -ms-transition-property: all;
+    -o-transition-property: all;
+
+    -webkit-transition-property: all;
+    z-index: -1;
 }
 
 
 .waiting #wait {
     display: block;
-    z-index: 1;
     -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
     opacity: 1;
+    z-index: 1;
 }
 
 .delay #delay {
     display: block;
-    z-index: 2;
     -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
     opacity: 1;
+    z-index: 2;
 }
 
 .error #error, #error.unsupported, #error.cookies_disabled {
     display: block;
-    z-index: 3;
     -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
     opacity: 1;
+    z-index: 3;
 }
 
 #error.unsupported {
@@ -280,33 +280,33 @@ section > .contents {
 }
 
 .arrowContainer {
+    bottom: 0;
     position: absolute;
-    width: 105px;
     right:  0;
     top: 0;
-    bottom: 0;
+    width: 105px;
 }
 
 .arrow {
-    display: block;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-image: url('/dialog/i/arrow_grey.png');
-    background-repeat: no-repeat;
-    background-position: center;
     background-color: transparent;
+    background-image: url('/dialog/i/arrow_grey.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    bottom: 0;
+    display: block;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
 }
 
 #favicon {
-    position: absolute;
-    left: 400px;
-    top: 0;
     bottom: 0;
-    right: 20px; /* The same as the left padding of the left hand side */
+    left: 400px; /* The same as the left padding of the left hand side */
     overflow: hidden;
+    position: absolute;
+    right: 20px;
+    top: 0;
     z-index: 10;
 }
 
@@ -324,8 +324,16 @@ section > .contents {
 }
 
 #favicon h2, #favicon h3 {
+<<<<<<< HEAD
     line-height: 1.2em;
     margin: 10px 0 0 0;
+=======
+    line-height: 1.3em;    /* Use the same overflow for everything, this allows us to show the ellipsis.  Trying to set overflow-x only causes a scroll bar to be shown in firefox.  */
+    margin: 10px 0 0 0;  /* the 1.3em is to keep y, g, j, etc from having their bottoms chopped off */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+>>>>>>> C:/Users/Sean/AppData/Local/GitHub/PortableGit_8810fd5c2c79c73adcc73fd0825f3b32fdb816e7/tour url works
 }
 
 #favicon h2 {
@@ -339,16 +347,43 @@ section > .contents {
 
 #favicon .vertical {
     display: table-cell;
-    text-align: center;
     max-width: 0;
+    text-align: center;
 }
 
 div#required_email {
-    padding-top: .7em;
     font-size: 1.2em;
     font-weight: bold;
+    padding-top: .7em;
 }
 
+<<<<<<< HEAD
+=======
+#selectEmail {
+    bottom: 20px;
+    left: 20px;
+    overflow-y: auto;
+    position: absolute;
+    top: 20px;
+    width: 250px;
+}
+
+#selectEmail.vcenter {
+    overflow-y: visible;
+    /* The below 1px padding is part of a fix for a bug in webkit where there
+     * is a ghost padding-right to accommodate the scroll bar that is shown
+     * if there are many email addresses. The ghost padding caused the submit
+     * button to shift when the user clicked on it, sometimes making the
+     * submit button require two clicks.  The other half of the fix is in
+     * screen_size_hacks.js, where an adjustment to the width is made.
+     * These two in combination force Chrome to re-flow, which fixes its
+     * own bug.
+     */
+    padding-right: 1px;
+    position: static;
+}
+
+>>>>>>> C:/Users/Sean/AppData/Local/GitHub/PortableGit_8810fd5c2c79c73adcc73fd0825f3b32fdb816e7/tour url works
 .inputs > li {
   margin-top: 8px;
 }
@@ -380,9 +415,9 @@ div#required_email {
 }
 
 .submit {
-    margin-top: 8px;
     color: #333;
     font-size: 11px;
+    margin-top: 8px;
 }
 
 .submit > p {
@@ -390,8 +425,8 @@ div#required_email {
 }
 
 .tospp {
-  font-size: 11px;
   color: #787878;
+  font-size: 11px;
 }
 
 #rptospp {
@@ -405,13 +440,6 @@ div#required_email {
 }
 
 a.emphasize {
-  border-bottom: 1px solid #b8babc;
-  border-radius: 2px;
-  color: #484848;
-  font-size: 11px;
-  padding: 0 5px;
-  display: inline-block;
-  line-height: 22px;
   background-color: #e5e9eb;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#e5e9eb), to(#d8dbde));
   background-image: -webkit-linear-gradient(top, #e5e9eb, #d8dbde);
@@ -419,6 +447,13 @@ a.emphasize {
   background-image:     -ms-linear-gradient(top, #e5e9eb, #d8dbde);
   background-image:      -o-linear-gradient(top, #e5e9eb, #d8dbde);
   background-image:         linear-gradient(top, #e5e9eb, #d8dbde);
+  border-bottom: 1px solid #b8babc;
+  border-radius: 2px;
+  color: #484848;
+  display: inline-block;
+  font-size: 11px;
+  line-height: 22px;
+  padding: 0 5px;
 }
 
 a.emphasize:hover,
@@ -438,8 +473,8 @@ a.emphasize:active {
 
 
 #back {
-  color: #000;
   border-bottom: 1px dotted;
+  color: #000;
   font-weight: normal;
 }
 
@@ -453,20 +488,20 @@ a.emphasize:active {
 }
 
 #your_computer_content {
-  max-width: 490px;
   margin: auto;
+  max-width: 490px;
 }
 
 #your_computer_content li {
+  line-height: 28px;
   margin: 15px 0;
   text-align: left;
-  line-height: 28px;
 }
 
 #your_computer_content button {
-  margin: 0 10px 0 0;
   display: inline-block;
   float: none;
+  margin: 0 10px 0 0;
 }
 
 .unsupported, .cookies_disabled {
