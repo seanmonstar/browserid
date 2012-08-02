@@ -233,6 +233,8 @@ button:focus,
     background-image:      -ms-linear-gradient(top, #4aafe5, #2c89c8);
     background-image:       -o-linear-gradient(top, #4aafe5, #2c89c8);
     background-image:          linear-gradient(top, #4aafe5, #2c89c8);
+
+    color: #fff;
 }
 
 button:focus,
