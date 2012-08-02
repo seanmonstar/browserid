@@ -527,6 +527,8 @@ body.tour footer{
 
 #tour{
   padding: 30px 15px;
+  max-width: 700px;
+  margin: auto;
 }
 
 #tour article{
