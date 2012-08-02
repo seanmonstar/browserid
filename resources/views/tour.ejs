@@ -1,5 +1,5 @@
 <div id="tour">
-  <article>
+  <article class="multiple-pass">
       <div class="graphic">
           <img src="<%- cachify('/pages/i/one-password-graphic.png') %>" alt="<%- gettext('One password to rule them all.') %>">
       </div>
@@ -16,14 +16,24 @@
       </div>
   </article>
 
-  <article class="blurb flexible">
+  <article class="flexible">
       <div class="graphic">
-          <img src="<%- cachify('/pages/i/flexible-graphic.png') %>" alt="<%- gettext('Use multiple email addresses') %>">
+          <img src="<%- cachify('/dialog/i/tour-flexible.png') %>" alt="<%- gettext('Use multiple email addresses') %>">
       </div>
 
       <div class="info">
           <h1><%- gettext('Persona is flexible') %></h1>
           <p><%- gettext('Within Persona, your identity is your email address. You can use as many email addresses as you want, but you still only need one password.') %></p>
       </div>
+  </article>
+
+  <article class="half first">
+      <h1><%- gettext('Persona is proudly non-profit for you') %></h1>
+      <p><%- gettext('Persona is developed by Mozilla, a not-for-profit company trusted throughout the Web community. Our goal is to create technologies that balance an open Web platform with people\'s privacy.') %></p>
+  </article>
+
+  <article class="half">
+      <h1><%- gettext('Persona preserves your privacy') %></h1>
+      <p><%- gettext('Persona does not track your activity around the Web. It creates a wall between signing you in and what you do once you\'re there. The history of what sites you visit is stored only on your own computer.') %></p>
   </article>
 </div>

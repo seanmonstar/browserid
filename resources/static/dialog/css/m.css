@@ -228,3 +228,21 @@
   }
 }
 
+@media screen and (max-width: 500px) {
+  #tour .graphic, #tour .info, #tour .half{
+    float: none;
+    width: 100%;
+  }
+
+  #tour .half{
+    border-bottom: 1px solid #bec3c5;
+  }
+
+  #tour .info{
+    padding: 0;
+  }
+
+  #tour .flexible .info{
+    padding-top: 30px;
+  }
+}
