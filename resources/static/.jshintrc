@@ -6,7 +6,6 @@
   "boss": true,
   "noarg": true,
   "undef": true,
-  "browser": true,
   "laxbreak": true,
   "laxcomma": true,
   "eqeqeq": true,
@@ -17,6 +16,12 @@
     "_",
     "$",
     "jQuery",
+    "gettext",
+    "EJS",
+    "alert",
+    "Channel",
+    "WinChan",
+    "Hub"
   ],
   "shadow": false,
   "supernew": false
