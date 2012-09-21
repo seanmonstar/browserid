@@ -43,6 +43,7 @@
       moduleManager.register("xhr_disable_form", modules.XHRDisableForm);
       moduleManager.register("set_password", modules.SetPassword);
       moduleManager.register("rp_info", modules.RPInfo);
+      moduleManager.register("tour", modules.Tour);
 
       moduleManager.start("xhr_delay");
       moduleManager.start("xhr_disable_form");

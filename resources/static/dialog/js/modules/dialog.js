@@ -148,6 +148,10 @@ BrowserID.Modules.Dialog = (function() {
         startChannel.call(self);
       }
 
+      self.click('a[href="/tour"]', function() {
+        self.publish("tour");
+      });
+
       options.ready && _.defer(options.ready);
     },
 

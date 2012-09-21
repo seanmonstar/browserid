@@ -586,6 +586,11 @@
     mediator.publish("window_unload");
   });
 
+  test("tour - call doTour", function() {
+    mediator.publish("tour");
+    testActionStarted("doTour");
+  });
+
   function testAuthenticateSpecifiedEmail(specified, expected) {
     var options = {
       email: TEST_EMAIL,

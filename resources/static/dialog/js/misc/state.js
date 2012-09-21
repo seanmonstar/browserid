@@ -475,6 +475,10 @@ BrowserID.State = (function() {
 
     handleState("email_confirmed", handleEmailConfirmed);
 
+    handleState("tour", function(msg, info) {
+      startAction("doTour", info);
+    });
+
     handleState("cancel_state", function(msg, info) {
       cancelState(info);
     });

@@ -167,6 +167,10 @@ BrowserID.Modules.Actions = (function() {
 
     doRPInfo: function(info) {
       startService("rp_info", info);
+    },
+
+    doTour: function(info) {
+      startService("tour", info);
     }
   });
 
