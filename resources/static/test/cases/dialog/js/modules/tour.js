@@ -6,6 +6,7 @@
 
   var controller,
       bid = BrowserID,
+      mediator = bid.Mediator,
       testHelpers = bid.TestHelpers;
 
   module("dialog/js/modules/tour", {
@@ -34,6 +35,6 @@
     equal($("body").hasClass("tour"), false, "doesn't have tour class before start");
     createController();
     ok($("body").hasClass("tour"), "has tour class after start");
-  })
+  });
 
 })();

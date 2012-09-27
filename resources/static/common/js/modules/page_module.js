@@ -17,6 +17,7 @@ BrowserID.Modules.PageModule = (function() {
       sc;
 
    function onSubmit() {
+     /*jshint validthis:true*/
      if (!dom.hasClass("body", "submit_disabled") && this.validate()) {
        this.submit();
      }
@@ -76,6 +77,9 @@ BrowserID.Modules.PageModule = (function() {
 
     renderDelay: showScreen.curry(screens.delay),
     hideDelay: hideScreen.curry(screens.delay),
+
+    renderTour: showScreen.curry(screens.tour),
+    hideTour: hideScreen.curry(screens.tour),
 
     /**
      * Validate the form, if returns false when called, submit will not be

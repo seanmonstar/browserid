@@ -199,7 +199,7 @@ section > .contents {
     _height: 250px;
 }
 
-#wait, #error, #delay {
+#wait, #error, #delay, #tour {
     -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
     opacity: 0;
     transition-delay: 0.5s;
@@ -225,6 +225,12 @@ section > .contents {
     z-index: -1;
 }
 
+.tour #tour {
+    display: block;
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+    opacity: 1;
+    z-index: 1;
+}
 
 .waiting #wait {
     display: block;
@@ -329,16 +335,11 @@ section > .contents {
 }
 
 #favicon h2, #favicon h3 {
-<<<<<<< HEAD
-    line-height: 1.2em;
-    margin: 10px 0 0 0;
-=======
     line-height: 1.3em;    /* Use the same overflow for everything, this allows us to show the ellipsis.  Trying to set overflow-x only causes a scroll bar to be shown in firefox.  */
     margin: 10px 0 0 0;  /* the 1.3em is to keep y, g, j, etc from having their bottoms chopped off */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
->>>>>>> C:/Users/Sean/AppData/Local/GitHub/PortableGit_8810fd5c2c79c73adcc73fd0825f3b32fdb816e7/tour url works
 }
 
 #favicon h2 {
@@ -362,8 +363,6 @@ div#required_email {
     padding-top: .7em;
 }
 
-<<<<<<< HEAD
-=======
 #selectEmail {
     bottom: 20px;
     left: 20px;
@@ -388,7 +387,6 @@ div#required_email {
     position: static;
 }
 
->>>>>>> C:/Users/Sean/AppData/Local/GitHub/PortableGit_8810fd5c2c79c73adcc73fd0825f3b32fdb816e7/tour url works
 .inputs > li {
   margin-top: 8px;
 }
@@ -525,60 +523,60 @@ body.tour footer{
   display: none;
 }
 
-#tour{
+#tour-content{
   padding: 30px 15px;
   max-width: 700px;
   margin: auto;
 }
 
-#tour article{
+#tour-content article{
   border-bottom: 1px solid #bec3c5;
   margin-bottom: 30px;
   overflow: hidden;
   padding-bottom: 30px;
 }
 
-#tour article:last-child, #tour .half{
+#tour-content article:last-child, #tour-content .half{
   border-bottom: 0 none;
 }
 
-#tour .half{
+#tour-content .half{
   width: 50%;
   float: left;
 }
 
-#tour .half.first{
+#tour-content .half.first{
   padding-right: 30px;
 }
 
-#tour img{
+#tour-content img{
   max-width: 100%;
   vertical-align: bottom;
 }
 
-#tour h1{
+#tour-content h1{
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 20px;
 }
 
-#tour p{
+#tour-content p{
   font-size: 13px;
   line-height: 1.5;
   margin-bottom: 20px;
 }
 
-#tour p:last-child{
+#tour-content p:last-child{
   margin-bottom: 0;
 }
 
-#tour .graphic{
+#tour-content .graphic{
   float: left; /* 255 / 670 */
   text-align: center;
   width: 38.0597015%;
 }
 
-#tour .info{
+#tour-content .info{
   float: left;
   padding: 5px 45px 0;
   width: 61.9402985%; /* 415 / 670 */

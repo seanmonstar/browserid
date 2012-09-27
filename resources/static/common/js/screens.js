@@ -52,6 +52,7 @@ BrowserID.Screens = (function() {
 
   return {
     form: new Screen("#formWrap", "form"),
+    tour: new Screen("#tour", "tour"),
     wait: new Screen("#wait", "waiting"),
     error: new Screen("#error", "error"),
     delay: new Screen("#delay", "delay")

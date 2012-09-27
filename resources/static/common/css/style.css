@@ -473,7 +473,7 @@ footer .help {
   font-weight: bold;
 }
 
-#wait, #delay, #error {
+#wait, #delay, #error, #tour {
   background-color: #dadee1;
   background-image: url("/common/i/grain.png"), -webkit-gradient(linear, left top, left bottom, from(#dadee1), to(#c7ccd0));
   background-image: url("/common/i/grain.png"), -webkit-linear-gradient(top, #dadee1, #c7ccd0);

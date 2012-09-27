@@ -7,16 +7,22 @@ BrowserID.Modules.Tour = (function() {
 
   var bid = BrowserID,
       dom = bid.DOM,
+      mediator = bid.Mediator,
       sc;
+
+  function tourEnd() {
+    mediator.publish('cancel_state');
+  }
 
   var TourModule = bid.Modules.PageModule.extend({
     start: function tour_start(options) {
-      dom.addClass("body", "tour");
-      this.renderDialog("tour");
+      this.renderTour("tour");
+
+      this.click("#header .sign-in.button", tourEnd);
     },
     stop: function tour_stop() {
       sc.stop.call(this);
-      dom.removeClass("body", "tour");
+      this.hideTour();
     }
   });
 
