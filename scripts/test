@@ -34,17 +34,17 @@ function run() {
     front: {
       what: "Front end unit tests under PhantomJS" + frontend_test_filter,
       node_env: 'test_json',
-      script: 'test_frontend'
+      script: 'test_frontend.js'
     },
     back: {
       what: "API level unit tests using a JSON database",
       node_env: 'test_json',
-      script: 'test_backend'
+      script: 'test_backend.js'
     },
     back_mysql: {
       what: "API level unit tests using MySQL",
       node_env: 'test_mysql',
-      script: 'test_backend'
+      script: 'test_backend.js'
     }
   };
   var conf = availConf[testName];
@@ -58,7 +58,7 @@ function run() {
 
   console.log(">>> Now Running:", conf.what);
   process.env['NODE_ENV'] = conf.node_env;
-  var kid = spawn(path.join(__dirname, conf.script));
+  var kid = spawn('node', [path.join(__dirname, conf.script)]);
   kid.stdout.on('data', function(d) { process.stdout.write(d); });
   kid.stderr.on('data', function(d) { process.stderr.write(d); });
   kid.on('exit', function(code) {
