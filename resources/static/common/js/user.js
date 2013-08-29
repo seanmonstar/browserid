@@ -17,6 +17,7 @@ BrowserID.User = (function() {
       provisioning = bid.Provisioning,
       addressCache = {},
       primaryAuthCache = {},
+      realmInfoCache = {},
       complete = bid.Helpers.complete,
       registrationComplete = false,
       POLL_DURATION = 3000,
@@ -398,22 +399,6 @@ BrowserID.User = (function() {
     }
   }
 
-  function getLoggedInEmail(onComplete, onFailure) {
-    var email = storage.site.get(origin, "logged_in");
-    if (!email && realm) {
-      email = storage.realm.get(realm, "logged_in");
-      if (email) {
-        return network.realmInfo(realm, function(realmInfo) {
-          if (realmInfo.realm.indexOf(realm) !== -1) {
-            complete(onComplete, email);
-          }
-        }, onFailure);
-      }
-    }
-
-    complete(onComplete, email);
-  }
-
   User = {
     init: function(config) {
       config = config || {};
@@ -439,7 +424,7 @@ BrowserID.User = (function() {
       User.resetCaches();
       registrationComplete = false;
       pollDuration = POLL_DURATION;
-      stagedEmail = stagedPassword = userid = auth_status = null;
+      stagedEmail = stagedPassword = userid = auth_status = realm = null;
       issuer = "default";
       allowUnverified = false;
     },
@@ -447,6 +432,7 @@ BrowserID.User = (function() {
     resetCaches: function() {
       addressCache = {};
       primaryAuthCache = {};
+      realmInfoCache = {};
     },
 
     /**
@@ -1245,7 +1231,7 @@ BrowserID.User = (function() {
 
           // If the issuer has changed, then silent assertions should not be
           // generated until the user verifies with the new issuer. Keep tabs
-          // getSilentAssertion will handle this. If there is no prevIssuer,
+          // logged into realme this. If there is no prevIssuer,
           // the user has no cert, and there is no problem.
           info.issuerChange = !!prevIssuer;
         }
@@ -1556,10 +1542,18 @@ BrowserID.User = (function() {
         if (!authenticated) 
           return complete(onComplete, null, null);
 
-        getLoggedInEmail(function(loggedInEmail) {
+        User.isRealmValid(function(realmAgrees) {
+          var loggedInEmail = User.getOriginLoggedIn();
+          var realmEmail = User.getRealmLoggedIn();
+
           // User is not signed into the site.
-          if (!loggedInEmail)
-            return complete(onComplete, null, null);
+          if (!loggedInEmail) {
+            if (realmAgrees && realmEmail) {
+              loggedInEmail = realmEmail;
+            } else {
+              return complete(onComplete, null, null);
+            }
+          }
 
           User.resetCaches();
           User.addressInfo(loggedInEmail, function(info) {
@@ -1571,7 +1565,14 @@ BrowserID.User = (function() {
             // If there has not been an issuer change and Persona's view of the
             // world agrees with the sites, then skip assertion generation.
             if (( ! info.issuerChange)
+                    // could be different if logged into realm but not
+                    // site, so we need to generate a site-specific
+                    // assertion
+                    && (loggedInEmail === User.getOriginLoggedIn())
                     && (loggedInEmail === siteSpecifiedEmail)) {
+              if (realmAgrees) {
+                User.setRealmLoggedIn(loggedInEmail);
+              }
               return complete(onComplete, loggedInEmail, null);
             }
 
@@ -1582,6 +1583,12 @@ BrowserID.User = (function() {
             // issuer to make sure the user is authenticated there.
             User.getAssertion(loggedInEmail, origin,
                 function(assertion) {
+              if (assertion) {
+                User.setOriginLoggedIn(loggedInEmail);
+                if (realmAgrees) {
+                  User.setRealmLoggedIn(loggedInEmail);
+                }
+              }
               complete(onComplete, assertion ? loggedInEmail : null, assertion);
             }, onFailure);
           });
@@ -1599,8 +1606,27 @@ BrowserID.User = (function() {
     logout: function(onComplete, onFailure) {
       User.checkAuthentication(function(authenticated) {
         if (authenticated) {
-          // TODO: logout of REALM also
           storage.site.remove(origin, "logged_in");
+
+          // since its a network request, only make if need to, to
+          // reduce unnecessary slowdown
+          if (User.getRealmLoggedIn()) {
+            return User.isRealmValid(function(realmsAgree) {
+              // don't remove user's realm association if site isn't
+              // reall part of realm.
+              //
+              // Example: 
+              // 1. foo.com claims { realm: 'bar.com' }
+              // 2. bar.com's browserid-realm does not include 'foo.com'
+              // 3. logging out of foo.com should not log out user from
+              //    bar.com realm, because bar.com does not agree.
+              if (realmsAgree) {
+                storage.realm.remove(realm, "logged_in");
+              }
+              
+              complete(onComplete, !!authenticated);
+            }, onFailure);
+          }
         }
 
         if (onComplete) {
@@ -1678,12 +1704,50 @@ BrowserID.User = (function() {
       }, onFailure);
     },
 
-    setLoggedInEmail: function setLoggedInEmail(email) {
+    setOriginLoggedIn: function setOriginLoggedIn(email) {
       storage.site.set(origin, "logged_in", email);
     },
+    
+    getOriginLoggedIn: function getOriginLoggedIn() {
+      return storage.site.get(origin, "logged_in");
+    },
 
-    getLoggedInEmail: function getLoggedInEmail(onComplete, onFailure) {
-      
+    setRealmLoggedIn: function setRealmLoggedIn(email) {
+      if (realm) {
+        storage.realm.set(realm, "logged_in", email);
+      }
+    },
+
+    getRealmLoggedIn: function getRealmLoggedIn() {
+      if (realm) {
+        return storage.realm.get(realm, "logged_in");
+      }
+    },
+
+    realmInfo: function realmInfo(onComplete, onFailure) {
+      if (!realm) {
+        return complete(onComplete, null);
+      }
+      if (realmInfoCache[realm]) {
+        complete(onComplete, realmInfoCache[realm]);
+      } else {
+        network.realmInfo(realm, function realmComplete(realmInfo) {
+          realmInfoCache[realm] = realmInfo;
+          complete(onComplete, realmInfo);
+        }, onFailure);
+      }
+    },
+
+    isRealmValid: function isRealmValid(onComplete, onFailure) {
+      User.realmInfo(function(realmInfo) {
+        var realmsAgree = false;
+        if (realmInfo && realmInfo.realm.indexOf(origin) > -1) {
+          realmsAgree = true;
+        } else {
+          realm = null;
+        }
+        complete(onComplete, realmsAgree);
+      }, onFailure);
     }
   };
 

@@ -19,7 +19,10 @@
       testNotUndefined = testHelpers.testNotUndefined,
       testObjectValuesEqual = testHelpers.testObjectValuesEqual,
       provisioning = bid.Mocks.Provisioning,
-      TEST_EMAIL = "testuser@testuser.com";
+      TEST_EMAIL = "testuser@testuser.com",
+      TEST_REALM = "http://testrealm.com",
+      TEST_SITE_IN_REALM = "http://testsiteinrealm.com",
+      TEST_SITE_NOT_REALM = "https://testsitenorealm.com";
 
   // I generated these locally, they are used nowhere else.
   var pubkey = {"algorithm":"RS","n":"56063028070432982322087418176876748072035482898334811368408525596198252519267108132604198004792849077868951906170812540713982954653810539949384712773390200791949565903439521424909576832418890819204354729217207360105906039023299561374098942789996780102073071760852841068989860403431737480182725853899733706069","e":"65537"};
@@ -55,7 +58,7 @@
     var components = jwcrypto.extractComponents(bundle.signedAssertion);
 
     // Check for parts of the assertion
-    equal(components.payload.aud, testOrigin, "correct audience");
+    equal(components.payload.aud, lib.getOrigin() || testOrigin, "correct audience");
     var expires = parseInt(components.payload.exp, 10);
     ok(typeof expires === "number" && !isNaN(expires), "expiration date is valid");
 
@@ -1126,7 +1129,7 @@
     xhr.setContextInfo("auth_level", "password");
 
     lib.syncEmailKeypair(LOGGED_IN_EMAIL, function() {
-      lib.setLoggedInEmail(LOGGED_IN_EMAIL);
+      lib.setOriginLoggedIn(LOGGED_IN_EMAIL);
 
       lib.getSilentAssertion(LOGGED_IN_EMAIL, function(email, assertion) {
         equal(email, LOGGED_IN_EMAIL, "correct email");
@@ -1180,10 +1183,118 @@
     var REQUESTED_EMAIL = "requested@testuser.com";
 
     lib.syncEmailKeypair(LOGGED_IN_EMAIL, function() {
-      storage.site.set(lib.getOrigin(), "logged_in", LOGGED_IN_EMAIL);
+      lib.setOriginLoggedIn(LOGGED_IN_EMAIL);
       lib.getSilentAssertion(REQUESTED_EMAIL, function(email, assertion) {
         equal(email, LOGGED_IN_EMAIL, "correct email");
         testAssertion(assertion, start);
+      }, testHelpers.unexpectedXHRFailure);
+    }, testHelpers.unexpectedXHRFailure);
+  });
+
+  asyncTest("getSilentAssertion when user is logged into valid realm, but not site", function() {
+    xhr.setContextInfo("auth_level", "password");
+    var LOGGED_IN_EMAIL = TEST_EMAIL;
+
+    lib.setOrigin(TEST_SITE_IN_REALM);
+    lib.setRealm(TEST_REALM);
+
+    lib.syncEmailKeypair(LOGGED_IN_EMAIL, function() {
+      lib.setRealmLoggedIn(LOGGED_IN_EMAIL);
+      lib.getSilentAssertion(LOGGED_IN_EMAIL, function(email, assertion) {
+        equal(email, LOGGED_IN_EMAIL, "correct email");
+        equal(lib.getOriginLoggedIn(), LOGGED_IN_EMAIL, "site set to logged in state");
+        equal(lib.getRealmLoggedIn(), LOGGED_IN_EMAIL, "realm set to logged in state");
+        testAssertion(assertion, start);
+      }, testHelpers.unexpectedXHRFailure);
+    }, testHelpers.unexpectedXHRFailure);
+  });
+
+  asyncTest("getSilentAssertion when realm is declared, but user is not logged in to realm", function() {
+    xhr.setContextInfo("auth_level", "password");
+    var LOGGED_IN_EMAIL = TEST_EMAIL;
+
+    lib.setOrigin(TEST_SITE_IN_REALM);
+    lib.setRealm(TEST_REALM);
+
+    lib.syncEmailKeypair(LOGGED_IN_EMAIL, function() {
+      lib.getSilentAssertion(LOGGED_IN_EMAIL, function(email, assertion) {
+        equal(email, null, "no email");
+        equal(lib.getOriginLoggedIn(), null, "site not set to logged in state");
+        equal(lib.getRealmLoggedIn(), null, "realm not set to logged in state");
+        start();
+      }, testHelpers.unexpectedXHRFailure);
+    }, testHelpers.unexpectedXHRFailure);
+  });
+  
+  asyncTest("getSilentAssertion when invalid realm is declared", function() {
+    xhr.setContextInfo("auth_level", "password");
+    var LOGGED_IN_EMAIL = TEST_EMAIL;
+
+    lib.setOrigin(TEST_SITE_NOT_REALM);
+    lib.setRealm(TEST_REALM);
+    lib.setRealmLoggedIn(LOGGED_IN_EMAIL);
+
+    lib.syncEmailKeypair(LOGGED_IN_EMAIL, function() {
+      lib.getSilentAssertion(LOGGED_IN_EMAIL, function(email, assertion) {
+        equal(email, null, "no email");
+        equal(lib.getOriginLoggedIn(), null, "site not set to logged in state");
+        equal(lib.getRealmLoggedIn(), null, "realm not set to logged in state");
+        start();
+      }, testHelpers.unexpectedXHRFailure);
+    }, testHelpers.unexpectedXHRFailure);
+  });
+
+  asyncTest("getSilentAssertion when user is logged into site and realm, but realm is no longer valid", function() {
+    xhr.setContextInfo("auth_level", "password");
+    var LOGGED_IN_EMAIL = TEST_EMAIL;
+
+    lib.setOrigin(TEST_SITE_NOT_REALM);
+    lib.setRealm(TEST_REALM);
+    lib.setRealmLoggedIn(LOGGED_IN_EMAIL);
+    lib.setOriginLoggedIn(LOGGED_IN_EMAIL);
+
+    lib.syncEmailKeypair(LOGGED_IN_EMAIL, function() {
+      lib.getSilentAssertion(LOGGED_IN_EMAIL, function(email, assertion) {
+        equal(email, LOGGED_IN_EMAIL, "correct email");
+        equal(lib.getOriginLoggedIn(), LOGGED_IN_EMAIL, "site set to logged in state");
+        equal(storage.realm.get(TEST_REALM, "logged_in"), LOGGED_IN_EMAIL, "old realm kept the way it was");
+        start();
+      }, testHelpers.unexpectedXHRFailure);
+    }, testHelpers.unexpectedXHRFailure);
+  });
+
+  asyncTest("getSilentAssertion when user is logged into site, but realm is no longer valid", function() {
+    xhr.setContextInfo("auth_level", "password");
+    var LOGGED_IN_EMAIL = TEST_EMAIL;
+
+    lib.setOrigin(TEST_SITE_NOT_REALM);
+    lib.setRealm(TEST_REALM);
+    lib.setOriginLoggedIn(LOGGED_IN_EMAIL);
+
+    lib.syncEmailKeypair(LOGGED_IN_EMAIL, function() {
+      lib.getSilentAssertion(LOGGED_IN_EMAIL, function(email, assertion) {
+        equal(email, LOGGED_IN_EMAIL, "correct email");
+        equal(lib.getOriginLoggedIn(), LOGGED_IN_EMAIL, "site set to logged in state");
+        equal(storage.realm.get(TEST_REALM, "logged_in"), null, "old realm kept the way it was");
+        start();
+      }, testHelpers.unexpectedXHRFailure);
+    }, testHelpers.unexpectedXHRFailure);
+  });
+
+  asyncTest("getSilentAssertion when user is logged into site, but now site claims to be part of a valid realm", function() {
+    xhr.setContextInfo("auth_level", "password");
+    var LOGGED_IN_EMAIL = TEST_EMAIL;
+
+    lib.setOrigin(TEST_SITE_IN_REALM);
+    lib.setRealm(TEST_REALM);
+    lib.setOriginLoggedIn(LOGGED_IN_EMAIL);
+
+    lib.syncEmailKeypair(LOGGED_IN_EMAIL, function() {
+      lib.getSilentAssertion(LOGGED_IN_EMAIL, function(email, assertion) {
+        equal(email, LOGGED_IN_EMAIL, "correct email");
+        equal(lib.getOriginLoggedIn(), LOGGED_IN_EMAIL, "site set to logged in state");
+        equal(lib.getRealmLoggedIn(), LOGGED_IN_EMAIL, "logged into realm");
+        start();
       }, testHelpers.unexpectedXHRFailure);
     }, testHelpers.unexpectedXHRFailure);
   });
@@ -1193,10 +1304,13 @@
       lib.syncEmails(function() {
         var storedIdentities = storage.getEmails();
         equal(_.size(storedIdentities), 1, "one identity");
+        lib.setRealm(TEST_REALM);
+        lib.setRealmLoggedIn(TEST_EMAIL);
 
         lib.logoutUser(function() {
           storedIdentities = storage.getEmails();
           equal(_.size(storedIdentities), 0, "All items have been removed on logout");
+          equal(storage.realm.get(TEST_REALM, "logged_in"), null, "realms have been removed on logout");
 
           start();
         }, testHelpers.unexpectedXHRFailure);
@@ -1242,6 +1356,54 @@
 
     lib.logout(function onComplete(success) {
       strictEqual(success, true, "success flag good");
+      start();
+    }, testHelpers.unexpectedXHRFailure);
+  });
+
+  asyncTest("logout with no realm declared doesn't affect logged_in realm", function() {
+    xhr.setContextInfo("auth_level", "assertion");
+    lib.setOrigin(TEST_SITE_IN_REALM);
+    lib.setRealm(TEST_REALM);
+    lib.setOriginLoggedIn(TEST_EMAIL);
+    lib.setRealmLoggedIn(TEST_EMAIL);
+
+    // remove declared realm
+    lib.setRealm(null);
+
+    lib.logout(function onComplete(success) {
+      strictEqual(success, true, "success flag good");
+      equal(storage.site.get(TEST_SITE_IN_REALM, "logged_in"), null, "site logged in removed");
+      equal(storage.realm.get(TEST_REALM, "logged_in"), TEST_EMAIL, "realm logged in stayed the same");
+      start();
+    }, testHelpers.unexpectedXHRFailure);
+  });
+
+  asyncTest("logout with proper realm", function() {
+    xhr.setContextInfo("auth_level", "assertion");
+    lib.setOrigin(TEST_SITE_IN_REALM);
+    lib.setRealm(TEST_REALM);
+    lib.setOriginLoggedIn(TEST_EMAIL);
+    lib.setRealmLoggedIn(TEST_EMAIL);
+
+    lib.logout(function onComplete(success) {
+      strictEqual(success, true, "success flag good");
+      equal(storage.site.get(TEST_SITE_IN_REALM, "logged_in"), null, "site logged in removed");
+      equal(storage.realm.get(TEST_REALM, "logged_in"), null, "realm logged in removed");
+      start();
+    }, testHelpers.unexpectedXHRFailure);
+  });
+  
+  asyncTest("logout with illegal realm", function() {
+    xhr.setContextInfo("auth_level", "assertion");
+    lib.setOrigin(TEST_SITE_NOT_REALM);
+    lib.setRealm(TEST_REALM);
+    lib.setOriginLoggedIn(TEST_EMAIL);
+    lib.setRealmLoggedIn(TEST_EMAIL);
+
+    lib.logout(function onComplete(success) {
+      strictEqual(success, true, "success flag good");
+      equal(storage.site.get(TEST_SITE_NOT_REALM, "logged_in"), null, "site logged in removed");
+      equal(storage.realm.get(TEST_REALM, "logged_in"), TEST_EMAIL, "realm still logged in");
       start();
     }, testHelpers.unexpectedXHRFailure);
   });

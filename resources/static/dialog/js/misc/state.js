@@ -556,15 +556,28 @@ BrowserID.State = (function() {
     handleState("reset_password_staged", handleEmailStaged.curry("doConfirmResetPassword"));
 
     handleState("assertion_generated", function(msg, info) {
-      if (info.assertion !== null) {
-        self.success = true;
-        user.setLoggedInEmail(self.email);
-
+      function go() {
         mediator.publish("kpi_data", { orphaned: false });
+
         startAction("doCompleteSignIn", {
           assertion: info.assertion,
           email: self.email
         });
+
+        complete(info.complete);
+      }
+
+      if (info.assertion !== null) {
+        self.success = true;
+        user.setOriginLoggedIn(self.email);
+
+        // at this point, we don't want to blow up at the very end if a
+        // realmInfo request fails, do we?
+        user.isRealmValid(function(isValid) {
+          if (isValid) user.setRealmLoggedIn(self.email);
+          go();
+        }, go);
+
       }
       else {
         redirectToState("pick_email");

@@ -15,7 +15,11 @@
       storage = bid.Storage,
       testHelpers = bid.TestHelpers,
       xhr = bid.Mocks.xhr,
-      TEST_EMAIL = "testuser@testuser.com";
+      TEST_EMAIL = "testuser@testuser.com",
+      TEST_REALM = "http://testrealm.com",
+      TEST_SITE_IN_REALM = "http://testsiteinrealm.com",
+      TEST_SITE_NOT_REALM = "https://testsitenorealm.com";
+
 
   var ActionsMock = function() {
     this.called = {};
@@ -456,7 +460,55 @@
     });
   });
 
+  test("assertion_generated sets logged_in", function() {
+    setContextInfo("password");
+    storage.addEmail(TEST_EMAIL);
 
+    mediator.publish("email_chosen", { email: TEST_EMAIL });
+
+    mediator.subscribe("assertion_generated", function() {
+      equal(user.getOriginLoggedIn(), TEST_EMAIL, "origin logged_in set to email");
+    });
+
+    mediator.publish("assertion_generated", { assertion: "assertion" });
+
+  });
+
+  asyncTest("assertion_generated with valid realm sets logged_in", function() {
+    setContextInfo("password");
+    storage.addEmail(TEST_EMAIL);
+    user.setOrigin(TEST_SITE_IN_REALM);
+    user.setRealm(TEST_REALM);
+
+    mediator.publish("email_chosen", { email: TEST_EMAIL });
+
+    mediator.publish("assertion_generated", { 
+      assertion: "assertion",
+      complete: function() {
+        equal(user.getOriginLoggedIn(), TEST_EMAIL, "origin logged_in set to email");
+        equal(user.getRealmLoggedIn(), TEST_EMAIL, "realm logged_in set to email");
+        start();
+      }
+    });
+  });
+
+  asyncTest("assertion_generated with invalid realm does NOT set logged_in", function() {
+    setContextInfo("password");
+    storage.addEmail(TEST_EMAIL);
+    user.setOrigin(TEST_SITE_NOT_REALM);
+    user.setRealm(TEST_REALM);
+
+    mediator.publish("email_chosen", { email: TEST_EMAIL });
+
+    mediator.publish("assertion_generated", { 
+      assertion: "assertion",
+      complete: function() {
+        equal(user.getOriginLoggedIn(), TEST_EMAIL, "origin logged_in set to email");
+        equal(user.getRealmLoggedIn(), null, "realm logged_in should not be set");
+        start();
+      }
+    });
+  });
 
   asyncTest("email_valid_and_ready, need to ask user whether it's their computer - redirect to is_this_your_computer", function() {
     setContextInfo("password");

@@ -184,38 +184,15 @@ BrowserID.Storage = (function() {
   }
 
   function siteSet(site, key, value) {
-    var allSiteInfo = JSON.parse(storage.siteInfo || "{}");
-    var siteInfo = allSiteInfo[site] = allSiteInfo[site] || {};
-
     if(key === "email" && !getEmail(value)) {
       throw new Error("unknown email address");
     }
-
-    siteInfo[key] = value;
-
-    storage.siteInfo = JSON.stringify(allSiteInfo);
+    generic3KeySet('siteInfo', site, key, value);
   }
 
-  function siteGet(site, key) {
-    var allSiteInfo = JSON.parse(storage.siteInfo || "{}");
-    var siteInfo = allSiteInfo[site];
+  var siteGet = generic3KeyGet.curry("siteInfo");
 
-    return siteInfo && siteInfo[key];
-  }
-
-  function siteRemove(site, key) {
-    var allSiteInfo = JSON.parse(storage.siteInfo || "{}");
-    var siteInfo = allSiteInfo[site];
-
-    if (siteInfo) {
-      delete siteInfo[key];
-
-      // If no more info for site, get rid of it.
-      if (!_.size(siteInfo)) delete allSiteInfo[site];
-
-      storage.siteInfo = JSON.stringify(allSiteInfo);
-    }
-  }
+  var siteRemove = generic3KeyRemove.curry("siteInfo");
 
   function siteCount(callback) {
     var allSiteInfo = JSON.parse(storage.siteInfo || "{}");
@@ -224,7 +201,11 @@ BrowserID.Storage = (function() {
 
   function generic2KeySet(namespace, key, value) {
     var allInfo = JSON.parse(storage[namespace] || "{}");
-    allInfo[key] = value;
+    if (value == null) {
+      delete allInfo[key];
+    } else {
+      allInfo[key] = value;
+    }
     storage[namespace] = JSON.stringify(allInfo);
   }
 
@@ -237,6 +218,22 @@ BrowserID.Storage = (function() {
     var allInfo = JSON.parse(storage[namespace] || "{}");
     delete allInfo[key];
     storage[namespace] = JSON.stringify(allInfo);
+  }
+
+  function generic3KeySet(namespace, sub, key, value) {
+    var info = generic2KeyGet(namespace, sub) || {};
+    info[key] = value;
+    generic2KeySet(namespace, sub, info);
+  }
+
+  function generic3KeyGet(namespace, sub, key) {
+    return (generic2KeyGet(namespace, sub) || {})[key];
+  }
+
+  function generic3KeyRemove(namespace, sub, key) {
+    var info = generic2KeyGet(namespace, sub) || {};
+    delete info[key];
+    generic2KeySet(namespace, sub, _.size(info) ? info : null);
   }
 
   function loggedInCount() {
@@ -271,6 +268,11 @@ BrowserID.Storage = (function() {
       delete allSiteInfo[site].logged_in;
     }
     storage.siteInfo = JSON.stringify(allSiteInfo);
+    var allRealmInfo = JSON.parse(storage.realmInfo || "{}");
+    for (var realm in allRealmInfo) {
+      delete allRealmInfo[realm].logged_in;
+    }
+    storage.realmInfo = JSON.stringify(allRealmInfo);
   }
 
   function mapEmailToUserID(emailOrUserID) {
@@ -785,15 +787,15 @@ BrowserID.Storage = (function() {
       /**
        * Get info for realm.
        */
-      get: generic2KeyGet.curry("realmInfo"),
+      get: generic3KeyGet.curry("realmInfo"),
       /**
        * Set info for realm.
        */
-      set: generic2KeySet.curry("realmInfo"),
+      set: generic3KeySet.curry("realmInfo"),
       /**
        * Clear realm info.
        */
-      clear: generic2KeyRemove.curry("realmInfo")
+      remove: generic3KeyRemove.curry("realmInfo")
     }
   };
 }());

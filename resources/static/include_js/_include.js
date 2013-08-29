@@ -252,7 +252,7 @@
           });
 
           commChan.notify({
-            method: 'watch',
+            method: 'onwatch',
             params: { 
               loggedInUser: loggedInUser,
               realm: realm
@@ -356,6 +356,8 @@
       api_called = null;
 
       options.start_time = (new Date()).getTime();
+
+      options.realm = realm;
 
       // focus an existing window
       if (w) {

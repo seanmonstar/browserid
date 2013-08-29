@@ -276,6 +276,9 @@ BrowserID.Modules.Dialog = (function() {
 
       publishKpis.call(self, params.rpAPI);
 
+      if (params.realm)
+        user.setRealm(params.realm);
+
       if (params.returnTo)
         user.setReturnTo(params.returnTo);
 

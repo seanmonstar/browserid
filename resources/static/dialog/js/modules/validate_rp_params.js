@@ -120,6 +120,10 @@ BrowserID.Modules.ValidateRpParams = (function() {
             "experimental_emailHint");
       }
 
+      if (paramsFromRP.realm) {
+        params.realm = fixupRealm(paramsFromRP.realm);
+      }
+
       if (hash.indexOf("#AUTH_RETURN") === 0) {
         var primaryParams = storage.idpVerification.get();
         if (!primaryParams)
@@ -199,6 +203,18 @@ BrowserID.Modules.ValidateRpParams = (function() {
     }
 
     return issuer;
+  }
+
+  function fixupRealm(realm) {
+    // A realm should only be scheme + host (+ port).
+    /*jshint newcap:false*/
+    var u = URLParse(realm);
+    if (u.scheme + '://' + u.authority !== realm) {
+      var encodedURI = encodeURI(u.validate().normalize().toString());
+      throw new Error("invalid realm: " + encodedURI);
+    }
+
+    return realm;
   }
 
   function validateBackgroundColor(value) {

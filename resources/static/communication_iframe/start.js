@@ -95,7 +95,7 @@
     loggedInUser = email;
   });
 
-  chan.bind("watch", function(trans, params) {
+  chan.bind("onwatch", function(trans, params) {
     loggedInUser = params.loggedInUser;
     user.setRealm(params.realm);
   });

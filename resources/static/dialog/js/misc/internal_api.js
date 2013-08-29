@@ -159,19 +159,10 @@
 
     setOrigin(origin);
 
-    user.checkAuthenticationAndSync(function(authenticated) {
-      // User must be authenticated to get an assertion.
-      if(authenticated) {
-        user.getAssertion(email, user.getOrigin(), function(assertion) {
-          complete(assertion || null);
-        }, complete.curry(null));
-      }
-      else {
-        complete(null);
-      }
+    user.getSilentAssertion(email, function(_email, assertion) {
+      complete(assertion);
     }, complete.curry(null));
   }
-
   function setOrigin(origin) {
     user.setOrigin(origin);
     // B2G and marketplace use special issuers that disable primaries. Go see
@@ -228,6 +219,7 @@
     var remoteOrigin = options.origin;
     var loggedInUser = options.loggedInUser;
     setOrigin(remoteOrigin);
+    user.setRealm(options.realm);
     checkAndEmit();
 
     function checkAndEmit() {
@@ -273,7 +265,6 @@
     function doLogout() {
       if (loggedInUser !== null) {
         loggedInUser = null;
-        storage.site.remove(remoteOrigin, "logged_in");
         callback({ method: 'logout' });
       }
     }
