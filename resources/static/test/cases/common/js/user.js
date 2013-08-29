@@ -1126,7 +1126,7 @@
     xhr.setContextInfo("auth_level", "password");
 
     lib.syncEmailKeypair(LOGGED_IN_EMAIL, function() {
-      storage.site.set(lib.getOrigin(), "logged_in", LOGGED_IN_EMAIL);
+      lib.setLoggedInEmail(LOGGED_IN_EMAIL);
 
       lib.getSilentAssertion(LOGGED_IN_EMAIL, function(email, assertion) {
         equal(email, LOGGED_IN_EMAIL, "correct email");

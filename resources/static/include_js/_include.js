@@ -157,6 +157,7 @@
     };
 
     var loggedInUser;
+    var realm;
 
     var compatMode = undefined;
     function checkCompat(requiredMode) {
@@ -250,12 +251,13 @@
             if (observers.match) observers.match();
           });
 
-          if (defined(loggedInUser)) {
-            commChan.notify({
-              method: 'loggedInUser',
-              params: loggedInUser
-            });
-          }
+          commChan.notify({
+            method: 'watch',
+            params: { 
+              loggedInUser: loggedInUser,
+              realm: realm
+            }
+          });
         }
       } catch(e) {
         // channel building failed!  let's ignore the error and allow higher
@@ -317,6 +319,7 @@
       // back compat support for loggedInEmail
       checkRenamed(options, "loggedInEmail", "loggedInUser");
       loggedInUser = options.loggedInUser;
+      realm = options.realm;
 
       _open_hidden_iframe();
     }

@@ -26,7 +26,8 @@ BrowserID.User = (function() {
       userid,
       auth_status,
       issuer = "default",
-      allowUnverified = false;
+      allowUnverified = false,
+      realm;
 
   var TRANSITION_STATES = [
     "transition_to_secondary",
@@ -397,6 +398,22 @@ BrowserID.User = (function() {
     }
   }
 
+  function getLoggedInEmail(onComplete, onFailure) {
+    var email = storage.site.get(origin, "logged_in");
+    if (!email && realm) {
+      email = storage.realm.get(realm, "logged_in");
+      if (email) {
+        return network.realmInfo(realm, function(realmInfo) {
+          if (realmInfo.realm.indexOf(realm) !== -1) {
+            complete(onComplete, email);
+          }
+        }, onFailure);
+      }
+    }
+
+    complete(onComplete, email);
+  }
+
   User = {
     init: function(config) {
       config = config || {};
@@ -458,6 +475,14 @@ BrowserID.User = (function() {
      */
     getOrigin: function() {
       return origin;
+    },
+
+    setRealm: function(realmArg) {
+      realm = realmArg;
+    },
+
+    getRealm: function() {
+      return realm;
     },
 
     setOriginEmail: function(email) {
@@ -1527,35 +1552,40 @@ BrowserID.User = (function() {
        * possibly verify their email address. No assertion should be generated.
        */
       User.checkAuthenticationAndSync(function(authenticated) {
-        var loggedInEmail = storage.site.get(origin, "logged_in");
-        // User is not signed in to Persona or not signed into the site.
-        if (!(authenticated && loggedInEmail))
+        // User is not signed in
+        if (!authenticated) 
           return complete(onComplete, null, null);
 
-        User.resetCaches();
-        User.addressInfo(loggedInEmail, function(info) {
-          // If the address is in a transition state, the user must see
-          // messaging in the dialog before continuing.
-          if (isTransitioning(info.state))
+        getLoggedInEmail(function(loggedInEmail) {
+          // User is not signed into the site.
+          if (!loggedInEmail)
             return complete(onComplete, null, null);
 
-          // If there has not been an issuer change and Persona's view of the
-          // world agrees with the sites, then skip assertion generation.
-          if (( ! info.issuerChange)
-                  && (loggedInEmail === siteSpecifiedEmail)) {
-            return complete(onComplete, loggedInEmail, null);
-          }
+          User.resetCaches();
+          User.addressInfo(loggedInEmail, function(info) {
+            // If the address is in a transition state, the user must see
+            // messaging in the dialog before continuing.
+            if (isTransitioning(info.state))
+              return complete(onComplete, null, null);
 
-          // Try to fetch an assertion. If a cert for the address exists or
-          // if one can be signed by the backing IdP, an assertion will be
-          // generated.
-          // If there has been an issuer change, this will check with the new
-          // issuer to make sure the user is authenticated there.
-          User.getAssertion(loggedInEmail, origin,
-              function(assertion) {
-            complete(onComplete, assertion ? loggedInEmail : null, assertion);
-          }, onFailure);
-        });
+            // If there has not been an issuer change and Persona's view of the
+            // world agrees with the sites, then skip assertion generation.
+            if (( ! info.issuerChange)
+                    && (loggedInEmail === siteSpecifiedEmail)) {
+              return complete(onComplete, loggedInEmail, null);
+            }
+
+            // Try to fetch an assertion. If a cert for the address exists or
+            // if one can be signed by the backing IdP, an assertion will be
+            // generated.
+            // If there has been an issuer change, this will check with the new
+            // issuer to make sure the user is authenticated there.
+            User.getAssertion(loggedInEmail, origin,
+                function(assertion) {
+              complete(onComplete, assertion ? loggedInEmail : null, assertion);
+            }, onFailure);
+          });
+        }, onFailure);
       }, onFailure);
     },
 
@@ -1569,6 +1599,7 @@ BrowserID.User = (function() {
     logout: function(onComplete, onFailure) {
       User.checkAuthentication(function(authenticated) {
         if (authenticated) {
+          // TODO: logout of REALM also
           storage.site.remove(origin, "logged_in");
         }
 
@@ -1645,6 +1676,14 @@ BrowserID.User = (function() {
         }
         else complete(onFailure, "user is not authenticated");
       }, onFailure);
+    },
+
+    setLoggedInEmail: function setLoggedInEmail(email) {
+      storage.site.set(origin, "logged_in", email);
+    },
+
+    getLoggedInEmail: function getLoggedInEmail(onComplete, onFailure) {
+      
     }
   };
 

@@ -775,6 +775,25 @@ BrowserID.Storage = (function() {
        * Clear any RP Redirection info
        */
       clear: clearRpRequestInfo
+    },
+
+    /*
+     * Info used regarding realms, such as if a user has signed into a
+     * realm.
+     */
+    realm: {
+      /**
+       * Get info for realm.
+       */
+      get: generic2KeyGet.curry("realmInfo"),
+      /**
+       * Set info for realm.
+       */
+      set: generic2KeySet.curry("realmInfo"),
+      /**
+       * Clear realm info.
+       */
+      clear: generic2KeyRemove.curry("realmInfo")
     }
   };
 }());

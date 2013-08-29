@@ -95,6 +95,11 @@
     loggedInUser = email;
   });
 
+  chan.bind("watch", function(trans, params) {
+    loggedInUser = params.loggedInUser;
+    user.setRealm(params.realm);
+  });
+
   chan.bind("loaded", function(trans, params) {
     trans.delayReturn(true);
     setRemoteOrigin(trans.origin);

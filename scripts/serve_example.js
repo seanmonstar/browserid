@@ -25,6 +25,10 @@ if (process.env['PUBLIC_URL']) {
   }));
 }
 
+express.static.mime.define({ 'application/json': [
+  'browserid-realm',
+  'well-known\\browserid-realm' // to fix bug in mime.lookup() sucking at windows paths
+]});
 exampleServer.use(express.static(path.join(__dirname, "..", "example", "rp")));
 
 exampleServer.use(express.bodyParser());

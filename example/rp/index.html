@@ -179,6 +179,7 @@ function checkAssertion(assertion) {
 
 navigator.id.watch({
   loggedInUser: (storage.loggedInUser === 'null') ? null : storage.loggedInUser,
+  realm: location.host,
   onready: function () {
     loggit("onready");
     var txt = serial++ + ' navigator.id ready at ' + (new Date).toString();

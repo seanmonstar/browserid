@@ -526,6 +526,25 @@ BrowserID.Network = (function() {
     },
 
     /**
+     * Get infornation about a browserid-realm.
+     * @method realmInfo
+     * @param {string} realm - Hostname of realm to check.
+     * @param {function} onComplete - Called with an object on success,
+     *   contained these properties:
+     *     realm: array of hostnames
+     * @param {function} onFailure - Called on XHR failure.
+     */
+    realmInfo: function realmInfo(realm, onComplete, onFailure) {
+      get({
+        url: "/wsapi/realm_info?realm=" + encodeURIComponent(realm),
+        success: function realmInfo_sucess(data, textStatus, xhr) {
+          complete(onComplete, data);
+        },
+        error: onFailure
+      });
+    },
+
+    /**
      * Remove an email address from the current user.
      * @method removeEmail
      * @param {string} email - Email address to remove.
