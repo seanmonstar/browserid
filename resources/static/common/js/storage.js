@@ -60,6 +60,8 @@ BrowserID.Storage = (function() {
     storage.removeItem("emails");
     storage.removeItem("siteInfo");
     storage.removeItem("managePage");
+    storage.removeItem("realmInfo");
+
     // Ensure there are default values after they are removed.  This is
     // necessary so that IE8's localStorage synchronization issues do not
     // surface.  In IE8, if the dialog page is open when the verification page
@@ -82,6 +84,7 @@ BrowserID.Storage = (function() {
       managePage: {},
       returnTo: null,
       siteInfo: {},
+      realmInfo: {},
       stagedOnBehalfOf: null,
       usersComputer: {}
     }, function(defaultVal, key) {
@@ -271,6 +274,7 @@ BrowserID.Storage = (function() {
     var allRealmInfo = JSON.parse(storage.realmInfo || "{}");
     for (var realm in allRealmInfo) {
       delete allRealmInfo[realm].logged_in;
+      delete allRealmInfo[realm].sites;
     }
     storage.realmInfo = JSON.stringify(allRealmInfo);
   }

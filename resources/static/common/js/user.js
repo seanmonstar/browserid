@@ -1622,6 +1622,16 @@ BrowserID.User = (function() {
               //    bar.com realm, because bar.com does not agree.
               if (realmsAgree) {
                 storage.realm.remove(realm, "logged_in");
+                // However, if realms do agree, then logging out of the
+                // realm should log the user out of each site that was
+                // part of the realm when they logged in
+                var sites = storage.realm.get(realm, "sites");
+                if (sites) {
+                  sites.forEach(function(site) {
+                    storage.site.remove(site, "logged_in");
+                  });
+                  storage.realm.remove(realm, "sites");
+                }
               }
               
               complete(onComplete, !!authenticated);
@@ -1707,7 +1717,7 @@ BrowserID.User = (function() {
     setOriginLoggedIn: function setOriginLoggedIn(email) {
       storage.site.set(origin, "logged_in", email);
     },
-    
+
     getOriginLoggedIn: function getOriginLoggedIn() {
       return storage.site.get(origin, "logged_in");
     },
@@ -1715,6 +1725,11 @@ BrowserID.User = (function() {
     setRealmLoggedIn: function setRealmLoggedIn(email) {
       if (realm) {
         storage.realm.set(realm, "logged_in", email);
+        var sites = storage.realm.get(realm, "sites") || [];
+        if (_.indexOf(sites, origin) === -1) {
+          sites.push(origin);
+          storage.realm.set(realm, "sites", sites);
+        }
       }
     },
 
