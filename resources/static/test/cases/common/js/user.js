@@ -22,6 +22,7 @@
       TEST_EMAIL = "testuser@testuser.com",
       TEST_REALM = "http://testrealm.com",
       TEST_SITE_IN_REALM = "http://testsiteinrealm.com",
+      TEST_SITE2_IN_REALM = "http://testsite2inrealm.com",
       TEST_SITE_NOT_REALM = "https://testsitenorealm.com";
 
   // I generated these locally, they are used nowhere else.
@@ -1381,13 +1382,18 @@
   asyncTest("logout with proper realm", function() {
     xhr.setContextInfo("auth_level", "assertion");
     lib.setOrigin(TEST_SITE_IN_REALM);
-    lib.setRealm(TEST_REALM);
     lib.setOriginLoggedIn(TEST_EMAIL);
+    lib.setRealm(TEST_REALM);
     lib.setRealmLoggedIn(TEST_EMAIL);
+
+    // visited another site in realm, logged in of course
+    lib.setOrigin(TEST_SITE2_IN_REALM);
+    lib.setOriginLoggedIn(TEST_EMAIL);
 
     lib.logout(function onComplete(success) {
       strictEqual(success, true, "success flag good");
-      equal(storage.site.get(TEST_SITE_IN_REALM, "logged_in"), null, "site logged in removed");
+      equal(storage.site.get(TEST_SITE_IN_REALM, "logged_in"), null, "other site of realm logged_in removed");
+      equal(storage.site.get(TEST_SITE2_IN_REALM, "logged_in"), null, "current site logged_in removed");
       equal(storage.realm.get(TEST_REALM, "logged_in"), null, "realm logged in removed");
       start();
     }, testHelpers.unexpectedXHRFailure);
