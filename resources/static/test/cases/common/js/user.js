@@ -20,7 +20,7 @@
       testObjectValuesEqual = testHelpers.testObjectValuesEqual,
       provisioning = bid.Mocks.Provisioning,
       TEST_EMAIL = "testuser@testuser.com",
-      TEST_REALM = "http://testrealm.com",
+      TEST_REALM = "testrealm.com",
       TEST_SITE_IN_REALM = "http://testsiteinrealm.com",
       TEST_SITE2_IN_REALM = "http://testsite2inrealm.com",
       TEST_SITE_NOT_REALM = "https://testsitenorealm.com";

@@ -176,10 +176,9 @@ function checkAssertion(assertion) {
     }
   });
 };
-
 navigator.id.watch({
   loggedInUser: (storage.loggedInUser === 'null') ? null : storage.loggedInUser,
-  realm: location.search ? location.search.match(/realm=([^&]+)/g)[1] : undefined,
+  realm: location.search ? location.search.match(/realm=([^&]+)/)[1] : undefined,
   onready: function () {
     loggit("onready");
     var txt = serial++ + ' navigator.id ready at ' + (new Date).toString();

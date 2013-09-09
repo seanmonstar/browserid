@@ -16,7 +16,7 @@
       testHelpers = bid.TestHelpers,
       xhr = bid.Mocks.xhr,
       TEST_EMAIL = "testuser@testuser.com",
-      TEST_REALM = "http://testrealm.com",
+      TEST_REALM = "testrealm.com",
       TEST_SITE_IN_REALM = "http://testsiteinrealm.com",
       TEST_SITE_NOT_REALM = "https://testsitenorealm.com";
 

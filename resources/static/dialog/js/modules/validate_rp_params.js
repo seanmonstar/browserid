@@ -206,10 +206,10 @@ BrowserID.Modules.ValidateRpParams = (function() {
   }
 
   function fixupRealm(realm) {
-    // A realm should only be scheme + host (+ port).
+    // A realm should only be host (+ port).
     /*jshint newcap:false*/
-    var u = URLParse(realm);
-    if (u.scheme + '://' + u.authority !== realm) {
+    var u = URLParse("https://" + realm);
+    if (u.authority !== realm) {
       var encodedURI = encodeURI(u.validate().normalize().toString());
       throw new Error("invalid realm: " + encodedURI);
     }

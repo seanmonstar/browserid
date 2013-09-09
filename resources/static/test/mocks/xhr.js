@@ -243,7 +243,7 @@ BrowserID.Mocks.xhr = (function() {
       "get /wsapi/address_info?email=testuser%40testuser.com&issuer=default primaryOffline": { type: "primary", state: "offline", auth: "https://auth_url", prov: "https://prov_url", normalizedEmail: "testuser@testuser.com" },
       "get /wsapi/address_info?email=testuser%40testuser.com&issuer=default ajaxError": undefined,
 
-      "get /wsapi/realm_info?realm=http%3A%2F%2Ftestrealm.com valid": { realm: ['http://testrealm.com', 'http://testsiteinrealm.com', 'http://testsite2inrealm.com'] },
+      "get /wsapi/realm_info?realm=testrealm.com valid": { realm: ['http://testrealm.com', 'http://testsiteinrealm.com', 'http://testsite2inrealm.com'] },
 
       "post /wsapi/used_address_as_primary valid": { success: true },
       "post /wsapi/used_address_as_primary primaryTransition": { success: true },

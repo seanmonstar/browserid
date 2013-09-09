@@ -14,13 +14,18 @@ require('assert'),
 vows = require('vows'),
 start_stop = require('./lib/start-stop.js'),
 wsapi = require('./lib/wsapi.js'),
-express = require('express'),
+fs = require('fs'),
 util = require('util'),
+os = require('os'),
 path = require('path');
 
 const REALM_HOST = "127.0.0.1";
 const REALM_PORT = 10020;
-const REALM_URL = "http://" + REALM_HOST + ":" + REALM_PORT;
+const REALM_URL = REALM_HOST + ":" + REALM_PORT;
+
+const SHIMMED_FILE = path.join(os.tmpDir(), 'tmp-' + process.pid + (Math.random() * 0x1000000000).toString(36));
+
+process.env.SHIMMED_REALMS = REALM_URL + "|" + SHIMMED_FILE;
 
 var suite = vows.describe('realm-info');
 
@@ -29,37 +34,23 @@ suite.options.error = false;
 start_stop.addStartupBatches(suite);
 
 
-var realmApp, realmServer;
-
-function makeRealmRequest(responseHandler) {
+function makeRealmRequest(body) {
   return function() {
     var self = this;
-    if (realmServer) {
-      realmServer.close(make);
-    } else {
-      make();
-    }
 
-    function make() {
-      realmApp = express.createServer();
-      realmApp.get('/.well-known/browserid-realm', function(req, res) {
-        responseHandler(res);
-      });
-      realmServer = realmApp.listen(REALM_PORT, REALM_HOST, function() {
-        wsapi.get('/wsapi/realm_info', {
-          realm: REALM_URL
-        }).apply(self);
-      });
-    }
+    fs.writeFile(SHIMMED_FILE, JSON.stringify(body), function(err) {
+      if (err) return self.callback(err);
+      wsapi.get('/wsapi/realm_info', {
+        realm: REALM_URL
+      }).apply(self);
+    });
   };
 }
 
 suite.addBatch({
   "realm_info with a valid realm": {
-    topic: makeRealmRequest(function(res) {
-      res.json({
-        realm: ["https://foo.doesnt.exist"]
-      });
+    topic: makeRealmRequest({
+      realm: ["https://foo.doesnt.exist"]
     }),
     "returns json with a realm array": function(err, res) {
       assert.isNull(err);
@@ -74,9 +65,7 @@ suite.addBatch({
 // 404 should be ok
 suite.addBatch({
   "realm_info with a non-existant well-known file": {
-    topic: makeRealmRequest(function(res) {
-      res.send(404);
-    }),
+    topic: makeRealmRequest({}),
     "returns json with an empty realm array": function(err, res) {
       assert.isNull(err);
       var obj = JSON.parse(res.body);
@@ -87,31 +76,12 @@ suite.addBatch({
   }
 });
 
-// not application/json
-suite.addBatch({
-  "realm_info with a well-known file with wrong content-type": {
-    topic: makeRealmRequest(function(res) {
-      // passing a string should send text/html
-      res.send(JSON.stringify({ realm: ["http://foo.com" ]}));
-    }),
-    "returns json with an empty realm array": function(err, res) {
-      assert.isNull(err);
-      var obj = JSON.parse(res.body);
-      assert.isArray(obj.realm);
-      assert.lengthOf(obj.realm, 0);
-    }
-
-  }
-});
 
 // missing realm property
 suite.addBatch({
   "realm_info with a well-known file missing the realm property": {
-    topic: makeRealmRequest(function(res) {
-      // passing a string should send text/html
-      res.json({
-        foo: 'bar'
-      });
+    topic: makeRealmRequest({
+      foo: 'bar'
     }),
     "returns json with an empty realm array": function(err, res) {
       assert.isNull(err);
@@ -119,18 +89,14 @@ suite.addBatch({
       assert.isArray(obj.realm);
       assert.lengthOf(obj.realm, 0);
     }
-
   }
 });
 
 // realm is not an array
 suite.addBatch({
   "realm_info with a well-known file with realm property as non-array": {
-    topic: makeRealmRequest(function(res) {
-      // passing a string should send text/html
-      res.json({
-        realm: 'foo.com'
-      });
+    topic: makeRealmRequest({
+      realm: 'foo.com'
     }),
     "returns json with an empty realm array": function(err, res) {
       assert.isNull(err);
@@ -145,16 +111,13 @@ suite.addBatch({
 // strings in realm aren't origins
 suite.addBatch({
   "realm_info with a well-known file with realm values not origins": {
-    topic: makeRealmRequest(function(res) {
-      // passing a string should send text/html
-      res.json({
-        realm: [
-          'foo.doesnt.exist', // missing scheme
-          true, // not a string
-          'http://foo.bam:8030', //VALID
-          'https://foo.doesnt.exist/bad/path' // includes path
-        ]
-      });
+    topic: makeRealmRequest({
+      realm: [
+        'foo.doesnt.exist', // missing scheme
+        true, // not a string
+        'http://foo.bam:8030', //VALID
+        'https://foo.doesnt.exist/bad/path' // includes path
+      ]
     }),
     "returns json with an empty realm array": function(err, res) {
       assert.isNull(err);
@@ -167,6 +130,16 @@ suite.addBatch({
   }
 });
 
+suite.addBatch({
+  "cleanup tmp file": {
+    topic: function() {
+      fs.unlink(SHIMMED_FILE, this.callback);
+    },
+    "successfully": function(err) {
+      assert.ifError(err);
+    }
+  }
+});
 
 start_stop.addShutdownBatches(suite);
 
