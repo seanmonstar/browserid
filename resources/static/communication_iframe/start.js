@@ -109,6 +109,10 @@
     });
   });
 
+  function notifyLogout() {
+    chan.notify({ method: 'logout' });
+  }
+
   chan.bind("logout", function(trans, params) {
     // set remote origin so that .logout can be called even if .request has
     // not.
@@ -118,9 +122,11 @@
     // logout have been called before. This allows the user to be force logged
     // out.
     if (loggedInUser !== null) {
-      storage.site.remove(remoteOrigin, "logged_in");
       loggedInUser = null;
-      chan.notify({ method: 'logout' });
+      // if not authenticated, or XHR errors, no problem, the user won't
+      // be logged in this session anyways, so always notify logout
+      // after we've tried to really do it.
+      user.logout(notifyLogout, notifyLogout);
     }
   });
 

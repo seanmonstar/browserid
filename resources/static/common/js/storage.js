@@ -197,9 +197,9 @@ BrowserID.Storage = (function() {
 
   var siteRemove = generic3KeyRemove.curry("siteInfo");
 
-  function siteCount(callback) {
-    var allSiteInfo = JSON.parse(storage.siteInfo || "{}");
-    return _.size(allSiteInfo);
+  function genericCount(namespace) {
+    var allInfo = JSON.parse(storage[namespace] || "{}");
+    return _.size(allInfo);
   }
 
   function generic2KeySet(namespace, key, value) {
@@ -644,7 +644,7 @@ BrowserID.Storage = (function() {
        * @method site.count
        * @return {number}
        */
-      count: siteCount
+      count: genericCount.curry("siteInfo")
     },
 
     manage_page: {
@@ -799,7 +799,9 @@ BrowserID.Storage = (function() {
       /**
        * Clear realm info.
        */
-      remove: generic3KeyRemove.curry("realmInfo")
+      remove: generic3KeyRemove.curry("realmInfo"),
+
+      count: genericCount.curry("realmInfo")
     }
   };
 }());

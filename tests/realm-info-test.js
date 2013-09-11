@@ -19,13 +19,11 @@ util = require('util'),
 os = require('os'),
 path = require('path');
 
-const REALM_HOST = "127.0.0.1";
-const REALM_PORT = 10020;
-const REALM_URL = REALM_HOST + ":" + REALM_PORT;
+const REALM = "127.0.0.1";
 
 const SHIMMED_FILE = path.join(os.tmpDir(), 'tmp-' + process.pid + (Math.random() * 0x1000000000).toString(36));
 
-process.env.SHIMMED_REALMS = REALM_URL + "|" + SHIMMED_FILE;
+process.env.SHIMMED_REALMS = REALM + "|" + SHIMMED_FILE;
 
 var suite = vows.describe('realm-info');
 
@@ -41,7 +39,7 @@ function makeRealmRequest(body) {
     fs.writeFile(SHIMMED_FILE, JSON.stringify(body), function(err) {
       if (err) return self.callback(err);
       wsapi.get('/wsapi/realm_info', {
-        realm: REALM_URL
+        realm: REALM
       }).apply(self);
     });
   };

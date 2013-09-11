@@ -103,6 +103,7 @@
     // See issue #2206 and #1637
     notEqual(typeof localStorage.emails, "undefined", "emails is defined");
     notEqual(typeof localStorage.siteInfo, "undefined", "siteInfo is defined");
+    notEqual(typeof localStorage.realmInfo, "undefined", "realmInfo is defined");
     notEqual(typeof localStorage.managePage, "undefined", "managePage is defined");
   });
 
@@ -127,30 +128,34 @@
     equal(error.message, "unknown email address", "Invalidating an unknown email address");
   });
 
-  test("site.set/site.get/site.remove/site.count, happy case", function() {
-    storage.site.set("www.testsite.com", "autoauth", true);
-    equal(storage.site.get("www.testsite.com", "autoauth"), true, "set/get works correctly");
-    equal(storage.site.count(), 1, "correct count");
+  _.each(['site', 'realm'], function(namespace) {
+  
+    test(namespace + "(.set/.get/.remove/.count), happy case", function() {
+      storage[namespace].set("www.testsite.com", "autoauth", true);
+      equal(storage[namespace].get("www.testsite.com", "autoauth"), true, "set/get works correctly");
+      equal(storage[namespace].count(), 1, "correct count");
 
-    storage.site.remove("www.testsite.com", "autoauth");
-    equal(typeof storage.site.get("www.testsite.com", "autoauth"), "undefined", "after remove, get returns undefined");
+      storage[namespace].remove("www.testsite.com", "autoauth");
+      equal(typeof storage[namespace].get("www.testsite.com", "autoauth"), "undefined", "after remove, get returns undefined");
 
-    equal(storage.site.count(), 0, "last field for site removed, count decremented correctly");
-  });
+      equal(storage[namespace].count(), 0, "last field for " + namespace + " removed, count decremented correctly");
+    });
 
-  test("clear clears site info", function() {
-    storage.site.set("www.testsite.com", "autoauth", true);
-    storage.clear();
-    equal(storage.site.count(), 0, "no more sites after clear");
-    equal(typeof storage.site.get("www.testsite.com", "autoauth"), "undefined", "after clear, get returns undefined");
-  });
+    test("clear clears " + namespace + " info", function() {
+      storage[namespace].set("www.testsite.com", "autoauth", true);
+      storage.clear();
+      equal(storage[namespace].count(), 0, "no more " + namespace + "s after clear");
+      equal(typeof storage[namespace].get("www.testsite.com", "autoauth"), "undefined", "after clear, get returns undefined");
+    });
 
-  test("site.get on field for site with no info", function() {
-    equal(typeof storage.site.get("site.with.noinfo", "autoauth"), "undefined", "get works on site with no info");
-  });
+    test(namespace + ".get on field for site with no info", function() {
+      equal(typeof storage[namespace].get("site.with.noinfo", "autoauth"), "undefined", "get works on " + namespace + " with no info");
+    });
 
-  test("site.get on field that is not set", function() {
-    equal(typeof storage.site.get("www.testsite.com", "notset"), "undefined", "get works on undefined field");
+    test(namespace + ".get on field that is not set", function() {
+      equal(typeof storage[namespace].get("www.testsite.com", "notset"), "undefined", "get works on undefined field");
+    });
+
   });
 
   test("site.set->email with email that is not known about", function() {
