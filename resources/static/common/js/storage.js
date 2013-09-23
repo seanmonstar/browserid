@@ -249,11 +249,11 @@ BrowserID.Storage = (function() {
     return count;
   }
 
-  function watchLoggedIn(origin, callback) {
-    var lastState = siteGet(origin, "logged_in");
+  function watchProperty(getter, callback) {
+    var lastState = getter();
 
     function checkState() {
-      var currentState = siteGet(origin, "logged_in");
+      var currentState = getter();
       if (lastState !== currentState) {
         callback();
         lastState = currentState;
@@ -263,6 +263,14 @@ BrowserID.Storage = (function() {
     // IE8 does not have addEventListener, nor does it support storage events.
     if (window.addEventListener) window.addEventListener('storage', checkState, false);
     else window.setInterval(checkState, 2000);
+  }
+
+  function watchLoggedIn(origin, callback) {
+    watchProperty(siteGet.curry(origin, "logged_in"), callback);
+  }
+
+  function watchRealm(realm, callback) {
+    watchProperty(BrowserID.Storage.realm.get.curry(realm, "logged_in"), callback);
   }
 
   function logoutEverywhere() {
@@ -719,6 +727,12 @@ BrowserID.Storage = (function() {
      * @param {function} callback - a callback to invoke when state changes
      */
     watchLoggedIn: watchLoggedIn,
+
+    /** watch for changes in the logged in state of a realm
+     * @param {string} realm - the realm to watch the status of
+     * @param {function} callback - a callback to invoke when state changes
+     */
+    watchRealm: watchRealm,
 
     /** clear all logged in preferences
      * @param {string} origin - the site to watch the status of

@@ -88,6 +88,10 @@
     storage.watchLoggedIn(remoteOrigin, checkAndEmit);
   }
 
+  function watchRealm(realm) {
+    storage.watchRealm(realm, checkAndEmit);
+  }
+
   // one of two events will cause us to begin checking to
   // see if an event shall be emitted - either an explicit
   // loggedInUser event or page load.
@@ -98,6 +102,9 @@
   chan.bind("onwatch", function(trans, params) {
     loggedInUser = params.loggedInUser;
     user.setRealm(params.realm);
+    if (params.realm) {
+      watchRealm(params.realm);
+    }
   });
 
   chan.bind("loaded", function(trans, params) {
