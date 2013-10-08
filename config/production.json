@@ -17,6 +17,13 @@
   "statsd": {
     "enabled": true
   },
+  "logging": {
+    "loggers": {
+      "bid": {
+        "level": "INFO"
+      }
+    }
+  },
   "kpi": {
     "backend_sample_rate": 0.0
   },

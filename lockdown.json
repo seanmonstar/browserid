@@ -11,6 +11,9 @@
   "ansi": {
     "0.1.2": "2627e29498f06e2a1c2ece9c21e28fd494430827"
   },
+  "ansi-styles": {
+    "0.2.0": "359ab4b15dcd64ba6d74734b72c36360a9af2c19"
+  },
   "async": {
     "0.1.22": "0fc1aaa088a0e3ef0ebe2d8831bab0dcf8845061",
     "0.2.9": "df63060fbf3d33286a76aaf6d55a2986d9ff8619"
@@ -43,6 +46,9 @@
     "1.0.0": "c3ccde60e9de6807c6f1aa4ef4843af29191c828",
     "1.1.0": "f3cc4deec19fe31f255864eb1e6ffad857266ef0"
   },
+  "bluebird": {
+    "0.11.5-0": "15e028b3d8169e85a60e590721cd1d4f23617813"
+  },
   "boom": {
     "0.3.8": "c8cdb041435912741628c044ecc732d1d17c09ea"
   },
@@ -51,6 +57,9 @@
   },
   "cef": {
     "0.3.3": "74a521e3c5c702fe1dc240e6250a2583f885227f"
+  },
+  "chalk": {
+    "0.3.0": "1c98437737f1199ebcc1d4c48fd41b9f9c8e8f23"
   },
   "character-parser": {
     "1.0.2": "55384d6afcf8c6b9dd483e8347646a790e4545e7"
@@ -212,6 +221,9 @@
     "1.2.3": "15a4806a57547cb2d2dbf27f42e89a8c3451b364",
     "2.0.1": "7fd6e0a4837c35d0cc15330294d9584a3898cf84"
   },
+  "has-color": {
+    "0.1.1": "28cc90127bc5448f99e76096dc97470a94a66720"
+  },
   "hashish": {
     "0.0.4": "6d60bc6ffaf711b6afd60e426d077988014e6554"
   },
@@ -239,6 +251,9 @@
   "inherits": {
     "1.0.0": "38e1975285bf1f7ba9c84da102bb12771322ac48",
     "2.0.1": "b17d08d326b4423e568eff719f91b0b1cbdf69f1"
+  },
+  "intel": {
+    "0.4.0": "cfa42f66d7ea3a948bf5ee2c90862b62e1fa0eff"
   },
   "irc": {
     "0.3.6": "eacfdb08c57971ea82c331178e2aaf34f1bab303"
@@ -352,9 +367,6 @@
   "osenv": {
     "0.0.3": "cd6ad8ddb290915ad9e22765576025d411f29cb6"
   },
-  "pkginfo": {
-    "0.3.0": "726411401039fe9b009eea86614295d5f3a54276"
-  },
   "plist": {
     "0.4.3": "812842a873aa57f98d0050bee6aaf3549b9d5798"
   },
@@ -383,9 +395,6 @@
   },
   "relative-date": {
     "1.1.1": "75c97c5446fa1146c1d250c47ca3629fb9a2e764"
-  },
-  "request": {
-    "2.16.6": "872fe445ae72de266b37879d6ad7dc948fa01cad"
   },
   "resolve": {
     "0.2.8": "fdb17d4abb0ecaf6f80d67ac03cf290088f6c0d0"
@@ -424,6 +433,9 @@
   },
   "stack-trace": {
     "0.0.7": "c72e089744fc3659f508cdce3621af5634ec0fff"
+  },
+  "strftime": {
+    "0.6.2": "da4c12073cebee3cd60f4821940cc27b19d348a1"
   },
   "temp": {
     "0.4.0": "671ad63d57be0fe9d7294664b3fc400636678a60",
@@ -473,6 +485,9 @@
   "useragent": {
     "2.0.7": "a44c07d157a15e13d73d4af4ece6aab70f298224"
   },
+  "utcstring": {
+    "0.1.0": "430fd510ab7fc95b5d5910c902d79880c208436b"
+  },
   "validator": {
     "0.4.24": "9d88e88809114a861ec69bc0ddcb85322c98499a",
     "1.5.1": "7ab356cbbcbbb000ab85c43b8cda12621b1344c0"
@@ -487,9 +502,6 @@
   },
   "which": {
     "1.0.5": "5630d6819dda692f1464462e7956cb42c0842739"
-  },
-  "winston": {
-    "0.7.2": "2570ae1aa1d8a9401e8d5a88362e1cf936550ceb"
   },
   "wordwrap": {
     "0.0.2": "b79669bb42ecb409f83d583cad52ca17eaa1643f"

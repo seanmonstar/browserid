@@ -39,6 +39,7 @@
     "gobbledygook": "0.0.3",
     "hood": "0.2.1",
     "i18n-abide": "0.0.14",
+    "intel": "0.4.0",
     "lockdown": "0.0.5",
     "jwcrypto": "0.4.4",
     "mkdirp": "0.3.5",
@@ -56,8 +57,7 @@
     "underscore": "1.5.2",
     "urlparse": "0.0.1",
     "useragent": "2.0.7",
-    "validator": "1.5.1",
-    "winston": "0.7.2"
+    "validator": "1.5.1"
   },
   "devDependencies": {
     "vows": "https://github.com/cloudhead/vows/tarball/253ca34c",

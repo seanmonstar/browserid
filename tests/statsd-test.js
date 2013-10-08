@@ -8,9 +8,11 @@ const assert = require('assert');
 const vows = require('vows');
 const start_stop = require('./lib/start-stop');
 const config = require('../lib/configuration');
-const StatsdTransport = require('../lib/logging/transports/statsd');
+const StatsdHandler = require('../lib/logging/handlers/statsd');
 const StatsdMock = require('./lib/statsd-mock');
 const HttpMock = require('./lib/http-mock');
+
+const logger = require('intel').getLogger('bid.test.statsd');
 
 require('./lib/test_env');
 
@@ -21,12 +23,15 @@ suite.options.error = false;
 
 start_stop.addStartupBatches(suite);
 
+function withProcess(name) {
+  return "browserid." + config.get('process_type') + "." + name;
+}
+
 var IncrementMessagesToTest = {
-  "assertion_failure": "browserid.vows.assertion_failure",
-  "wsapi_code_mismatch.wsapi_url":
-      "browserid.vows.wsapi_code_mismatch.wsapi_url",
-  "wsapi.wsapi_url": "browserid.vows.wsapi.wsapi_url",
-  "uncaught_exception": "browserid.vows.uncaught_exception"
+  "assertion_failure": withProcess("assertion_failure"),
+  "wsapi_code_mismatch.wsapi_url": withProcess("wsapi_code_mismatch.wsapi_url"),
+  "wsapi.wsapi_url": withProcess("wsapi.wsapi_url"),
+  "uncaught_exception": withProcess("uncaught_exception")
 };
 
 for (var logMessage in IncrementMessagesToTest) {
@@ -35,16 +40,15 @@ for (var logMessage in IncrementMessagesToTest) {
     batchConfig[logMessage + " - increments"] = {
       topic: function() {
         this.statsd = new StatsdMock();
-        this.statsdTransport = new StatsdTransport({
+        this.statsdTransport = new StatsdHandler({
           statsd: this.statsd
         });
-        this.statsdTransport.log('info', logMessage, {
+        this.statsdTransport.handle(logger.makeRecord(logger._name, logger.INFO, logMessage, [logMessage, {
           field: "value"
-        }, this.callback);
+        }])).done(this.callback);
       },
-      "succeeds": function(err, success) {
-        assert.isNull(err);
-        assert.equal(true, success);
+      "succeeds": function(err) {
+        assert.ifError(err);
       },
       "and reports to statsd": function() {
         // the process name is prepended onto the counter name
@@ -71,17 +75,16 @@ var TimingMessagesToTest = {
 for (var logMessage in TimingMessagesToTest) {
   (function(logMessage, expectedCounterName) {
     var batchConfig = {};
-    batchConfig[logMessage + " - increments"] = {
+    batchConfig[logMessage + " - times"] = {
       topic: function() {
         this.statsd = new StatsdMock();
-        this.statsdTransport = new StatsdTransport({
+        this.statsdTransport = new StatsdHandler({
           statsd: this.statsd
         });
-        this.statsdTransport.log('info', logMessage, 768, this.callback);
+        this.statsdTransport.handle(logger.makeRecord(logger._name, logger.INFO, logMessage, [logMessage, 768])).done(this.callback);
       },
-      "succeeds": function(err, success) {
-        assert.isNull(err);
-        assert.equal(true, success);
+      "succeeds": function(err) {
+        assert.ifError(err);
       },
       "and reports to statsd": function() {
         // the process name is prepended onto the counter name

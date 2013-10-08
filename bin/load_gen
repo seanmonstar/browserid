@@ -11,7 +11,7 @@
 require('../lib/baseExceptions').addExceptionHandler();
 var wsapi_client = require('../lib/wsapi_client');
 
-const winston = require('winston');
+const intel = require('intel');
 
 // option processing with optimist
 var argv = require('optimist')
@@ -219,7 +219,7 @@ function poll() {
           } else {
             completed[act][1]++;
           }
-          winston.error('('+act+') ' + err.toString());
+          intel.error('('+act+') ' + err.toString());
         } else {
           completed[act][0]++;
         }

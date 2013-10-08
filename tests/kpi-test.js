@@ -11,8 +11,11 @@ const wsapi = require('./lib/wsapi');
 const config = require('../lib/configuration');
 const kpi_data = require('../lib/kpi_data');
 const HttpMock = require('./lib/http-mock');
-const logger = require('../lib/logging/logging').logger;
-const KpiTransport = require('../lib/logging/transports/metrics-kpi');
+const KpiHandler = require('../lib/logging/handlers/kpi');
+const intel = require('../lib/logging/logging');
+const _ = require('underscore');
+
+const logger = intel.getLogger('bid.test.kpi');
 
 require('./lib/test_env');
 
@@ -133,8 +136,6 @@ suite.addBatch({
   }
 });
 
-function noOp() {}
-
 suite.addBatch({
   "staging and verification events": {
     topic: function() {
@@ -155,13 +156,20 @@ suite.addBatch({
       ];
       config.set('kpi.send_metrics', true);
 
-      var kpiTransport = new KpiTransport();
-
-      this.expectedEvents.forEach(function(event) {
-        kpiTransport.log('info', event, null, noOp);
+      var bid = intel.getLogger('bid');
+      var handler = _.find(bid._handlers, function(han) {
+        return han.constructor === KpiHandler;
       });
 
-      return kpiTransport.getQueue();
+      if (!handler) {
+        throw new Error('kpiggybank handler not found on logger');
+      }
+
+      this.expectedEvents.forEach(function(event) {
+        logger.log('info', event);
+      });
+
+      return handler.getQueue();
     },
     "are added to the KPI queue": function(queue) {
       var expectedEvents = this.expectedEvents;

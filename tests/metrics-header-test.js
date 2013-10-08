@@ -5,19 +5,23 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 require('./lib/test_env.js');
+const path = require('path');
+process.env.METRICS_LOG_FILE = path.resolve(path.join(__dirname, 'data', 'metrics.json'));
 
 const assert = require('assert');
 const fs = require('fs');
-const path = require('path');
 const http = require('http');
 const vows = require('vows');
 const urlparse = require('urlparse');
-const logger = require('../lib/logging/logging').logger;
 const start_stop = require('./lib/start-stop');
 const wsapi = require('./lib/wsapi');
 const config = require('../lib/configuration');
 const metrics_middleware = require('../lib/logging/middleware/metrics');
-const KpiTransport = require('../lib/logging/transports/metrics-kpi');
+const KpiHandler = require('../lib/logging/handlers/kpi');
+const intel = require('../lib/logging/logging');
+const _ = require('underscore');
+
+const logger = intel.getLogger('bid.test.metrics_header');
 
 var suite = vows.describe('metrics header test');
 suite.options.error = false;
@@ -25,7 +29,6 @@ suite.options.error = false;
 // allow this unit test to be targeted
 var SERVER_URL = process.env['SERVER_URL'] || 'http://127.0.0.1:10002/';
 
-process.env.METRICS_LOG_FILE = path.resolve(path.join(__dirname, 'data', 'metrics.json'));
 
 if (!process.env['SERVER_URL']) {
   // start up a pristine server if we're locally testing
@@ -92,12 +95,19 @@ suite.addBatch({
 // Listen for actual messages that are sent to the KPI transport.
 // reset the transport queue between each test run to ensure we only get the
 // messages we care about.
-var kpiTransport = KpiTransport.getInstance();
+var bid = intel.getLogger('bid');
+var kpiHandler = _.find(bid._handlers, function(han) {
+  return han.constructor === KpiHandler;
+});
+
+if (!kpiHandler) {
+  throw new Error("kpiggybank not found on logger");
+}
 
 function noOp() {}
 
 function sendRequestToMetricsMiddleware(url, referer) {
-  kpiTransport.reset();
+  kpiHandler.reset();
 
   metrics_middleware({
     connection: {
@@ -109,7 +119,7 @@ function sendRequestToMetricsMiddleware(url, referer) {
       'x-real-ip': '127.0.0.1',
       'referer': referer || 'https://sendmypin.org/auth'
     }
-  }, noOp, noOp);
+  }, {}, noOp);
 }
 
 suite.addBatch({
@@ -119,7 +129,7 @@ suite.addBatch({
       config.set('kpi.send_metrics', true);
 
       sendRequestToMetricsMiddleware('/sign_in', 'https://123done.org');
-      return kpiTransport.getItem('signin');
+      return kpiHandler.getQueue()[0][0];
     },
     "sends metrics fields to logger": function (entry) {
       assert.equal(entry.rp, 'https://123done.org');
@@ -137,7 +147,7 @@ suite.addBatch({
       config.set('kpi.send_metrics', true);
 
       sendRequestToMetricsMiddleware('/sign_in?AUTH_RETURN');
-      return kpiTransport.getItem('idp.auth_return');
+      return kpiHandler.getQueue()[0][0];
     },
     "kpi transport logs metric": function(entry) {
       assert.equal(entry.idp, 'https://sendmypin.org');
@@ -155,7 +165,7 @@ suite.addBatch({
       config.set('kpi.send_metrics', true);
 
       sendRequestToMetricsMiddleware('/sign_in?AUTH_RETURN_CANCEL');
-      return kpiTransport.getItem('idp.auth_cancel');
+      return kpiHandler.getQueue()[0][0];
     },
     "kpi transport logs metric": function(entry) {
       assert.equal(entry.idp, 'https://sendmypin.org');
