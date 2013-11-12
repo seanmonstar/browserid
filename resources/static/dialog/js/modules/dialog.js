@@ -50,7 +50,8 @@ BrowserID.Modules.Dialog = (function() {
       // workaround for environments that do not support popups.
       established = tryNativeChannel.call(self)
                  || tryWinChan.call(self)
-                 || tryRpRedirect.call(self);
+                 || tryRpRedirect.call(self)
+                 || tryDeclaritiveRpRedirect.call(self);
     }
     catch(e) {
       // generic error message displayed below
@@ -143,13 +144,79 @@ BrowserID.Modules.Dialog = (function() {
 
       return true;
     }
-
-    if (rpInfo) {
+  
+    if (rpInfo && !rpInfo.postBack) {
       var done = function done() {
         redirectFlowComplete(self.window, user.rpInfo.getReturnTo());
       };
       this.get(rpInfo.origin, rpInfo.params, done, done);
       return true;
+    }
+  }
+
+  function tryDeclaritiveRpRedirect() {
+    /*jshint validthis: true*/
+    var hash = this.window.location.hash;
+    var rpInfo;
+    if (hash) {
+      var qs = parseQueryString(hash);
+      if (qs.origin && qs.returnTo) {
+        rpInfo = {};
+        rpInfo.origin = qs.origin;
+        rpInfo.params = clone(qs);
+        rpInfo.params.rp_api = 'stateless';
+        delete rpInfo.params.origin;
+        rpInfo.postBack = true;
+        storage.rpRequest.set(rpInfo);
+      }
+    } else {
+      rpInfo = storage.rpRequest.get();
+    }
+
+    if (rpInfo) {
+      this.get(rpInfo.origin, rpInfo.params, postAssertion, postAssertion);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  function parseQueryString(str) {
+    var obj = {};
+    var pairs = str.replace(/^[\?#]/, '').split('&');
+    pairs.forEach(function(pair) {
+        if (!pair) return;
+        var parts = pair.split('=');
+        var key = parts.shift();
+        var val = parts.join('=');
+        obj[key] = val !== undefined ? val : 1;
+    });
+    return obj;
+  }
+
+  function clone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  function postAssertion(response) {
+    storage.rpRequest.clear();
+    if (response.assertion) {
+      //lolwut
+      var form = document.createElement('form');
+      form.setAttribute('method', 'post');
+      form.setAttribute('action', user.rpInfo.getReturnTo());
+
+      var assertionField = document.createElement('input');
+      assertionField.setAttribute('type', 'hidden');
+      assertionField.setAttribute('name', 'assertion');
+      assertionField.setAttribute('value', response.assertion);
+      form.appendChild(assertionField);
+
+      document.body.appendChild(form);
+      form.submit();
+    } else {
+      //TODO: do something
+      alert('omg');
     }
   }
 

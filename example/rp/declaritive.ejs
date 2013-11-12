@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="initial-scale=1.0; width=device-width;">
+<title>
+Persona Relying Party
+</title>
+<style type="text/css">
+
+body { margin: auto; font: 13px/1.5 Helvetica, Arial, 'Liberation Sans', FreeSans, sans-serif; }
+a:link, a:visited { font-style: italic; text-decoration: none; color: #008; }
+a:hover { border-bottom: 2px solid black ; }
+.title { font-weight: bold; text-align: center; margin: 1.5em auto 1.5em auto; }
+.title h1 { font-size: 2em; }
+.title h2 { font-size: 1.5em; }
+.intro { font-size: 1.2em;  }
+.specify, .session { font-size: 1.1em; padding-top: 2em; }
+body div { width: 600px; margin: auto; }
+
+pre {
+  font-family: 'lucida console', monaco, 'andale mono', 'bitstream vera sans mono', consolas, monospace;
+  border: 3px solid #666;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+  padding: .5em;
+  margin: .5em;
+  color: #ccc;
+  background-color: #333;
+/*  white-space: pre;*/
+  font-size: .9em;
+  word-wrap: break-word;
+}
+
+.specify ul { padding-left: 0px; }
+.specify li { list-style: none; }
+
+@media screen and (max-width: 640px) {
+  .intro, .output, .step {
+    width: 90%;
+  }
+}
+
+</style>
+</head>
+<body>
+<div class="title">
+  <h1>Persona Test Relying Party</h1>
+  <h2>Stateless "Goldilocks"</h2>
+</div>
+
+<div class="intro">
+  This is a RP for testing, it allows you to drive the
+  <tt>declaritive API</tt> calls manually to locally test Persona.  Looking to test <a href="/index.html">navigator.id.watch</a>?
+</div>
+
+<div class="specify">
+  <p><b>What flavor of assertion would you like?</b></p>
+  <ul>
+    <li>
+      <input type="checkbox" id="supplySiteName" <% if (query.supplySiteName) { %> checked="checked" <% } %>>
+      <label for="siteName">Supply Site Name:</label>
+      <input type="text" id="siteName" value="<%=query.supplySiteName || 'Persona Test Relying Party'%>" />
+    </li><li>
+      <input type="checkbox" id="siteLogo" <% if (query.siteLogo) { %> checked="checked" <% } %>>
+      <label for="siteLogo">Supply Site Logo</label>
+    </li><li>
+      <input type="checkbox" id="supplyBackgroundColor" <% if (query.supplyBackgroundColor) { %> checked="checked" <% } %>>
+      <label for="backgroundColor">Supply Background Color:</label>
+      <input type="text" id="backgroundColor" value="<%=query.supplyBackgroundColor || '#008'%>" />
+    </li><li>
+      <input type="checkbox" id="supplyEmailHint" <% if (query.supplyEmailHint) { %> checked="checked" <% } %>>
+      <label for="emailHint">Email Hint:</label>
+      <input type="text" id="emailHint" value="<%=query.supplyEmailHint || ''%>" />
+    </li><li>
+      <input type="checkbox" id="noJavaScript" <% if (noJavaScript) { %> checked="checked" <% } %>>
+      <label for="noJavaScript">No JavaScript API</label>
+    </li><li>
+      <input type="checkbox" id="noShim" <% if (noShim) { %> checked="checked" <% } %>>
+      <label for="noShim">No Shim</label>
+    </li>
+  </ul>
+  <a href="/auth/verify?<%= querystring %>" rel="login"
+      <% if (query.supplySiteName) { %>data-siteName="<%-query.supplySiteName%>" <% } %>
+      <% if (query.siteLogo) { %>data-siteLogo="/i/logo.png" <% } %>
+      <% if (query.supplyBackgroundColor) { %>data-backgroundColor="<%-query.supplyBackgroundColor%>" <% } %>
+      <% if (query.supplyEmailHint) { %>data-emailHint="<%-query.supplyEmailHint%>" <% } %>
+      >Get an assertion</a>
+</div>
+
+<div class="loginEvents">
+  <h2>logins</h2>
+  <pre> <%-session || '...'%> </pre>
+</div>
+
+</body>
+
+<script src="jquery-min.js"></script>
+<script>
+    // handle toggling options above
+    $(function() {
+        $('.specify input[type=checkbox]').change(function(ev) {
+            var el = $(this);
+            var qs = parseQueryString(location.search);
+            var name = el.attr('id');
+
+            if (this.checked) {
+                // if textbox also, we need textbox value
+                //otherwise, we can just set =1
+                var textbox = el.parent().find('input[type=text]')[0];
+                if (textbox) {
+                    qs[name] = textbox.value;
+                } else {
+                    qs[name] = 1;
+                }
+
+            } else {
+                delete qs[name];
+            }
+
+            location.search = toQueryString(qs);
+        });
+
+        function parseQueryString(str) {
+            var obj = {};
+            var pairs = str.replace('?', '').split('&');
+            pairs.forEach(function(pair) {
+                if (!pair) return;
+                var parts = pair.split('=');
+                obj[parts[0]] = parts[1] !== undefined ? parts[1] : 1;
+            });
+            return obj;
+        }
+
+        function toQueryString(obj) {
+            var pairs = [];
+            for (var key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    pairs.push(key + '=' + obj[key]);
+                }
+            }
+            return pairs.join('&');
+        }
+    });
+</script>
+<% if (!noShim) { %>
+    <script src="https://login.persona.org/include.js"></script>
+<% } %>
+<% if (!noJavaScript && !noShim) { %>
+
+    <script>
+
+    try {
+      var storage = localStorage;
+    }
+    catch(e) {
+      // Fx with cookies disabled with blow up when trying to access localStorage.
+      storage = {};
+    }
+
+
+    function loggit() {
+      try {
+        console.log.apply(console, arguments);
+      } catch(e) {}
+    }
+
+    var serial = 1;
+
+    // a function to check an assertion against the server
+    function checkAssertion(assertion) {
+      $.ajax({
+        url: "/process_assertion",
+        type: "post",
+        dataType: "json",
+        data: {
+          assertion: assertion,
+          audience: window.location.protocol + "//" + window.location.host,
+          forceIssuer: $('#forceIssuer').attr('checked') ? "issuer.domain" : undefined,
+          allowUnverified: $('#allowUnverified').attr('checked') ? true : false
+        },
+        success: function(data, textStatus, jqXHR) {
+          var old = $(".loginEvents > pre").text() + "\n";
+          $(".loginEvents > pre").text(old + JSON.stringify(data, null, 4));
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+          var resp = jqXHR.responseText ? JSON.parse(jqXHR.responseText) : errorThrown;
+          $(".loginEvents > pre").text(resp);
+        }
+      });
+    };
+
+    navigator.id.watch({
+      onlogin: function (assertion) {
+        loggit("onlogin");
+        var txt = serial++ + ' got assertion at ' + (new Date).toString();
+        $(".loginEvents > pre").text(txt);
+
+        checkAssertion(assertion);
+
+        $(".specify button.assertion").removeAttr('disabled');
+      }
+    });
+
+    </script>
+<% } %>
+
+</html>

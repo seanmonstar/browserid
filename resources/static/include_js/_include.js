@@ -1,6 +1,8 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+/*jshint -W082*/
+/*global console*/
 
   var BrowserSupport = (function() {
     var win = window,
@@ -15,9 +17,9 @@
 
     function getInternetExplorerVersion() {
       var rv = -1; // Return value assumes failure.
-      if (nav.appName == 'Microsoft Internet Explorer') {
+      if (nav.appName === 'Microsoft Internet Explorer') {
         var ua = nav.userAgent;
-        var re = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+        var re = new RegExp("MSIE ([0-9]{1,}[\\.0-9]{0,})");
         if (re.exec(ua) != null)
           rv = parseFloat(RegExp.$1);
       }
@@ -52,13 +54,13 @@
       try {
         var hasLocalStorage = 'localStorage' in win
                         // Firefox will except here if cookies are disabled.
-                        && win['localStorage'] !== null;
+                        && win.localStorage !== null;
 
         if(hasLocalStorage) {
           // browser has localStorage, check if it can be written to. If
           // cookies are disabled, some browsers (Chrome) will except here.
-          win['localStorage'].setItem("test", "true");
-          win['localStorage'].removeItem("test");
+          win.localStorage.setItem("test", "true");
+          win.localStorage.removeItem("test");
         }
         else {
           // Browser does not have local storage.
@@ -123,8 +125,8 @@
     var userAgent = navigator.userAgent;
     // We must check for both XUL and Java versions of Fennec.  Both have
     // distinct UA strings.
-    var isFennec = (userAgent.indexOf('Fennec/') != -1) ||  // XUL
-                     (userAgent.indexOf('Firefox/') != -1 && userAgent.indexOf('Android') != -1);   // Java
+    var isFennec = (userAgent.indexOf('Fennec/') !== -1) ||  // XUL
+                     (userAgent.indexOf('Firefox/') !== -1 && userAgent.indexOf('Android') !== -1);   // Java
 
     var windowOpenOpts =
       (isFennec ? undefined :
@@ -151,7 +153,7 @@
 
     var loggedInUser;
 
-    var compatMode = undefined;
+    var compatMode;
     function checkCompat(requiredMode) {
       if (requiredMode === true) {
         // this deprecation warning should be re-enabled when the .watch and .request APIs become final.
@@ -159,7 +161,7 @@
       }
 
       if (compatMode === undefined) compatMode = requiredMode;
-      else if (compatMode != requiredMode) {
+      else if (compatMode !== requiredMode) {
         throw new Error("you cannot combine the navigator.id.watch() API with navigator.id.getVerifiedEmail() or navigator.id.get()" +
               "this site should instead use navigator.id.request() and navigator.id.watch()");
       }
@@ -269,9 +271,13 @@
       }
     }
 
+    function deprecated(name) {
+      warn(name + " has been deprecated");
+    }
+
     function checkDeprecated(options, field) {
       if(defined(options[field])) {
-        warn(field + " has been deprecated");
+        deprecated(field);
         return true;
       }
     }
@@ -287,6 +293,26 @@
       }
     }
 
+    function clone(obj) {
+      // builds clone, exluding methods
+      return JSON.parse(JSON.stringify(obj));
+    }
+
+    // usage: merge({ a: 'b' }, { c: 'd' }, ...)
+    function merge(target) {
+      for (var i = 1, len = arguments.length; i < len; i++) {
+        var source = arguments[i];
+        if (!source) continue;
+        for (var prop in source) {
+          if (source.hasOwnProperty(prop)) {
+            target[prop] = source[prop];
+          }
+        }
+      }
+      return target;
+    }
+
+    var watchedOptions = {};
     function internalWatch(options) {
       if (typeof options !== 'object') return;
 
@@ -300,7 +326,7 @@
 
       if (!options.onlogin) throw new Error("'onlogin' is a required argument to navigator.id.watch()");
       if (!options.onlogout && (options.onmatch || options.onready || ('loggedInUser' in options)))
-        throw new Error('stateless api only allows onlogin option');
+        throw new Error('stateless api only allows onlogin function');
 
       observers.login = options.onlogin || null;
       observers.logout = options.onlogout || null;
@@ -310,6 +336,7 @@
 
       // back compat support for loggedInEmail
       checkRenamed(options, "loggedInEmail", "loggedInUser");
+      checkDeprecated(options, 'loggedInUser');
       loggedInUser = options.loggedInUser;
       if (!isNull(loggedInUser)  &&
           !isUndefined(loggedInUser) &&
@@ -318,8 +345,12 @@
         throw new Error("loggedInUser is not a valid type");
       }
 
+      watchedOptions = clone(options);
 
-      _open_hidden_iframe();
+      // if using declaritive api, we dont need the iframe, so lets not
+      // waste the bytes and cpu time
+      if (!options._postBack)
+        _open_hidden_iframe();
     }
 
     function isNull(arg) {
@@ -350,6 +381,15 @@
       checkDeprecated(options, "requiredEmail");
       checkRenamed(options, "tosURL", "termsOfService");
       checkRenamed(options, "privacyURL", "privacyPolicy");
+      checkDeprecated(options, 'termsOfService');
+      checkDeprecated(options, 'privacyPolicy');
+
+      // these all moved to watch(), to support native buttons in chrome
+      for (var option in options) {
+        if (options.hasOwnProperty(option)) {
+          warn('Passing ' + option + ' to navigator.id.request() is deprecated. Pass to navigator.id.watch() instead.');
+        }
+      }
 
       if (options.termsOfService && !options.privacyPolicy) {
         warn("termsOfService ignored unless privacyPolicy also defined");
@@ -425,6 +465,11 @@
         }
       }
 
+      options = merge(clone(watchedOptions), options);
+      // returnTo is used for post-email-verification redirect
+      if (!options.returnTo) options.returnTo = document.location.pathname;
+
+
       if (needsPopupFix) {
         return doPopupFix();
       }
@@ -483,11 +528,57 @@
           delete options.oncancel;
         }
       });
-    };
+    }
+
+    // declaritive API sugar! numnumunum
+
+    domReady(function() {
+      // find a[rel=login] links, setup watch and request if found
+      if (!document.querySelector) {
+        return;
+      }
+
+      var login = document.querySelector('a[rel=login]');
+      if (!login) {
+        return;
+      }
+
+      navigator.id.watch({
+        onlogin: function(assertion) {
+          // declaritive way is that we'll post the assertion to the
+          // returnTo url
+          var form = document.createElement('form');
+          form.style.display = 'none';
+          form.setAttribute('method', 'post');
+          form.setAttribute('action', login.href);
+
+          var assertionField = document.createElement('input');
+          assertionField.setAttribute('type', 'hidden');
+          assertionField.setAttribute('name', 'assertion');
+          assertionField.setAttribute('value', assertion);
+          form.appendChild(assertionField);
+
+          document.body.appendChild(form);
+          form.submit();
+        },
+        siteLogo: login.getAttribute('data-siteLogo'),
+        siteName: login.getAttribute('data-siteName'),
+        backgroundColor: login.getAttribute('data-backgroundColor'),
+        emailHint: login.getAttribute('data-emailHint')
+      });
+
+
+
+      login.onclick = function(event) {
+        event.preventDefault();
+        navigator.id.request();
+      };
+
+    });
 
     navigator.id = {
       request: function(options) {
-        if (this != navigator.id)
+        if (this !== navigator.id)
           throw new Error("all navigator.id calls must be made on the navigator.id object");
 
         if (!observers.login)
@@ -496,12 +587,10 @@
         options = options || {};
         checkCompat(false);
         api_called = "request";
-        // returnTo is used for post-email-verification redirect
-        if (!options.returnTo) options.returnTo = document.location.pathname;
         return internalRequest(options);
       },
       watch: function(options) {
-        if (this != navigator.id)
+        if (this !== navigator.id)
           throw new Error("all navigator.id calls must be made on the navigator.id object");
         checkCompat(false);
         internalWatch(options);
@@ -510,19 +599,21 @@
       // The callback parameter is DEPRECATED, instead you should use the
       // the .onlogout observer of the .watch() api.
       logout: function(callback) {
-        if (this != navigator.id)
+        if (this !== navigator.id)
           throw new Error("all navigator.id calls must be made on the navigator.id object");
+        deprecated('navigator.id.logout()');
         // allocate iframe if it is not allocated
         _open_hidden_iframe();
         // send logout message if the commChan exists
         if (commChan) commChan.notify({ method: 'logout' });
         if (typeof callback === 'function') {
-          warn('navigator.id.logout callback argument has been deprecated.');
+          deprecated('navigator.id.logout callback argument');
           setTimeout(callback, 0);
         }
       },
       // get an assertion
       get: function(callback, passedOptions) {
+        deprecated('navigator.id.get()');
         var opts = {};
         passedOptions = passedOptions || {};
         opts.privacyPolicy =  passedOptions.privacyPolicy || undefined;
@@ -564,7 +655,7 @@
       },
       // backwards compatibility with old API
       getVerifiedEmail: function(callback) {
-        warn("navigator.id.getVerifiedEmail has been deprecated");
+        deprecated("navigator.id.getVerifiedEmail()");
         checkCompat(true);
         api_called = "getVerifiedEmail";
         navigator.id.get(callback);
